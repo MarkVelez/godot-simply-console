@@ -4,6 +4,7 @@
 resource_name = "console_window"
 script/source = "extends Window
 
+# Console node references
 @onready var OutputFieldRef: RichTextLabel = %OutputField
 @onready var InputFieldRef: LineEdit = %InputField
 
