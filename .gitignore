@@ -5,10 +5,12 @@
 .import/
 export.cfg
 export_presets.cfg
+*.tmp
 
 # Project ignores
 project.godot
 /testing
+/addons/simply-console/data
 
 # Imported translations (automatically generated from CSV files)
 *.translation

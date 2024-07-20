@@ -4,9 +4,19 @@
 resource_name = "console_window"
 script/source = "extends Window
 
-# Console node references
+# Console node references.
 @onready var OutputFieldRef: RichTextLabel = %OutputField
 @onready var InputFieldRef: LineEdit = %InputField
+
+# Response limits
+const MAX_RESPONSES: int = 128
+const MAX_CHAR_COUNT: int = 8192
+
+
+func _ready() -> void:
+	output_text(
+		\"To see the list of available commands use the 'help' command.\"
+	)
 
 
 func on_close_requested() -> void:
@@ -14,15 +24,70 @@ func on_close_requested() -> void:
 
 
 func on_input_field_text_submitted(text: String) -> void:
+	if text == \"\":
+		return
+	
+	InputFieldRef.clear()
 	parse_command(text)
+	
+	# Cap the amount of responses to not bloat memory
+	while (
+		OutputFieldRef.get_paragraph_count() - 1 > MAX_RESPONSES
+		or OutputFieldRef.get_total_character_count() > MAX_CHAR_COUNT
+	):
+		OutputFieldRef.remove_paragraph(1)
 
 
 func parse_command(command: String) -> void:
-	pass
+	var response
+	# Escape bbcode tags to avoid possible issues
+	command = escape_bbcode(command)
+	
+	if not ConsoleDataManager.COMMAND_LIST_.has(command):
+		response = \"Command '\" + command + \"' does not exist.\"
+		output_text(response)
+		return
+	
+	var TargetRef: Node
+	var target = ConsoleDataManager.COMMAND_LIST_[command][\"target\"]
+	var type: int = ConsoleDataManager.COMMAND_LIST_[command][\"type\"]
+	var method: String = ConsoleDataManager.COMMAND_LIST_[command][\"method\"]
+	var args = ConsoleDataManager.COMMAND_LIST_[command][\"args\"]
+	
+	match type:
+		ConsoleDataManager.CommandType.GLOBAL:
+			TargetRef = get_node(\"/root/\" + target)
+		
+		ConsoleDataManager.CommandType.LOCAL:
+			if target == null:
+				TargetRef = self
+			else:
+				TargetRef = get_tree().root.find_child(target, true , false)
+	
+	if args == null:
+		response = TargetRef.call(method)
+	else:
+		response = TargetRef.callv(method, args)
+	
+	if response:
+		output_text(response)
 
 
-func output_response(response: String)-> void:
-	pass
+func output_text(text: String, color := Color.WHITE) -> void:
+	if color != Color.WHITE: 
+		OutputFieldRef.push_color(color)
+	
+	OutputFieldRef.push_paragraph(HORIZONTAL_ALIGNMENT_LEFT)
+	OutputFieldRef.append_text(text)
+	OutputFieldRef.pop_all()
+
+
+func escape_bbcode(text: String) -> String:
+	return text.replace(\"[\", \"[lb]\")
+
+
+func clear_console() -> void:
+	OutputFieldRef.clear()
 "
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_opm5p"]
@@ -31,8 +96,6 @@ func output_response(response: String)-> void:
 content_margin_left = 4.0
 content_margin_right = 4.0
 bg_color = Color(0.133333, 0.133333, 0.133333, 1)
-border_width_bottom = 2
-border_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
