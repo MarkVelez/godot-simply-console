@@ -17,13 +17,11 @@ const MAX_CHAR_COUNT: int = 8192
 
 
 func _ready() -> void:
-	output_text(
-		\"To see a list of available commands use the 'help' command.\",
-		Color.DARK_GRAY
+	output_comment(
+		\"To see a list of available commands use the 'help' command.\"
 	)
-	output_text(
-		\"Optionally, use 'help (command)' to get more information about a specific command.\",
-		Color.DARK_GRAY
+	output_comment(
+		\"Optionally, use 'help (command)' to get more information about a specific command.\"
 	)
 
 
@@ -65,6 +63,18 @@ func output_text(text: String, color := Color.WHITE) -> void:
 	OutputFieldRef.push_paragraph(HORIZONTAL_ALIGNMENT_LEFT)
 	OutputFieldRef.append_text(text)
 	OutputFieldRef.pop_all()
+
+
+func output_warning(text: String) -> void:
+	output_text(text, Color.YELLOW)
+
+
+func output_error(text: String) -> void:
+	output_text(text, Color.RED)
+
+
+func output_comment(text: String) -> void:
+	output_text(text, Color.DARK_GRAY)
 
 
 func escape_bbcode(text: String) -> String:
