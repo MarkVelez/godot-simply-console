@@ -17,7 +17,13 @@ var COMMAND_LIST_: Dictionary = {
 		"target": "ConsoleDataManager",
 		"type": CommandType.GLOBAL,
 		"method": "show_command_list",
-		"args": null
+		"args": [
+			{
+				"name": "command",
+				"type": TYPE_STRING,
+				"optional": true
+			}
+		]
 	},
 	"clear": {
 		"target": null,
@@ -29,7 +35,18 @@ var COMMAND_LIST_: Dictionary = {
 		"target": "LocalNode",
 		"type": CommandType.LOCAL,
 		"method": "test_method",
-		"args": null
+		"args": [
+			{
+				"name": "arg1",
+				"type": TYPE_INT,
+				"optional": true
+			},
+			{
+				"name": "arg2",
+				"type": TYPE_STRING,
+				"optional": true
+			}
+		]
 	}
 }
 
@@ -48,7 +65,7 @@ func _ready() -> void:
 func save_data() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
 	
-	file.store_string(JSON.stringify(COMMAND_LIST_, "\t"))
+	file.store_string(JSON.stringify(COMMAND_LIST_, "\t", false))
 	file.close()
 
 
@@ -64,11 +81,24 @@ func get_data() -> void:
 		return
 
 
-func show_command_list() -> String:
-	var list: String = "List of available commands:\n"
+func show_command_list(command: String = "") -> String:
+	var response: String = "List of available commands:\n"
 	
-	for command in COMMAND_LIST_:
-		list += command + ", "
+	if command == "":
+		for cmd in COMMAND_LIST_:
+			response += cmd + ", "
+		
+		return response.trim_suffix(", ")
 	
-	list.trim_suffix(", ")
-	return list
+	if COMMAND_LIST_.has(command):
+		if COMMAND_LIST_[command]["args"] == null:
+			return "'" + command + "' does not have any arguments."
+		response = "Argument(s) for '" + command + "':\n"
+		for ARG_ in COMMAND_LIST_[command]["args"]:
+			response += ARG_["name"]
+			if ARG_["optional"]:
+				response += " (optional)"
+			response += "\n"
+		return response.trim_suffix("\n")
+	
+	return "Command '" + command + "' does not exist."
