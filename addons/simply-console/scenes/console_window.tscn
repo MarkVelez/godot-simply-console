@@ -61,7 +61,7 @@ func parse_command(command: String, ARGS_: Array = []) -> void:
 	var target = ConsoleDataManager.COMMAND_LIST_[command][\"target\"]
 	var type: int = ConsoleDataManager.COMMAND_LIST_[command][\"type\"]
 	var method: String = ConsoleDataManager.COMMAND_LIST_[command][\"method\"]
-	var METHOD_ARGS_ = ConsoleDataManager.COMMAND_LIST_[command][\"args\"]
+	var METHOD_ARGS_: Array = ConsoleDataManager.COMMAND_LIST_[command][\"args\"]
 	
 	match type:
 		ConsoleDataManager.CommandType.GLOBAL:
@@ -92,7 +92,7 @@ func parse_command(command: String, ARGS_: Array = []) -> void:
 		)
 		return
 	
-	if ARGS_.is_empty() and not METHOD_ARGS_.is_empty():
+	if not METHOD_ARGS_.is_empty() and ARGS_.is_empty():
 		output_text(
 			\"Too few arguments for command '\"
 			+ command
@@ -112,12 +112,12 @@ func parse_command(command: String, ARGS_: Array = []) -> void:
 		return
 
 
-func args_optional(METHOD_ARGS_, ARGS_: Array) -> bool:
-	if METHOD_ARGS_ == null:
-		return true
-	
+func args_optional(METHOD_ARGS_: Array, ARGS_: Array) -> bool:
 	if not ARGS_.is_empty():
 		return false
+	
+	if METHOD_ARGS_.is_empty():
+		return true
 	
 	for ARG_INFO_ in METHOD_ARGS_:
 		if not ARG_INFO_[\"optional\"]:

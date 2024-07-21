@@ -29,7 +29,7 @@ var COMMAND_LIST_: Dictionary = {
 		"target": null,
 		"type": CommandType.LOCAL,
 		"method": "clear_console",
-		"args": null
+		"args": []
 	},
 	"test": {
 		"target": "LocalNode",
@@ -91,14 +91,16 @@ func show_command_list(command: String = "") -> String:
 		return response.trim_suffix(", ")
 	
 	if COMMAND_LIST_.has(command):
-		if COMMAND_LIST_[command]["args"] == null:
-			return "'" + command + "' does not have any arguments."
+		if COMMAND_LIST_[command]["args"].is_empty():
+			return "Command '" + command + "' does not have any arguments."
+		
 		response = "Argument(s) for '" + command + "':\n"
 		for ARG_ in COMMAND_LIST_[command]["args"]:
 			response += ARG_["name"]
 			if ARG_["optional"]:
 				response += " (optional)"
 			response += "\n"
+		
 		return response.trim_suffix("\n")
 	
 	return "Command '" + command + "' does not exist."
