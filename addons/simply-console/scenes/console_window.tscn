@@ -9,7 +9,7 @@ script/source = "extends Window
 @onready var InputFieldRef: LineEdit = %InputField
 
 # Response limits
-const MAX_RESPONSES: int = 128
+const MAX_RESPONSES: int = 256
 const MAX_CHAR_COUNT: int = 8192
 
 
@@ -28,6 +28,15 @@ func on_close_requested() -> void:
 	hide()
 
 
+func on_output_field_updated() -> void:
+	# Cap the amount of responses to not bloat memory
+	if (
+		OutputFieldRef.get_paragraph_count() - 1 > MAX_RESPONSES
+		or OutputFieldRef.get_total_character_count() > MAX_CHAR_COUNT
+	):
+		OutputFieldRef.call_deferred(\"remove_paragraph\", 1)
+
+
 func on_input_field_text_submitted(text: String) -> void:
 	if text == \"\":
 		return
@@ -38,13 +47,6 @@ func on_input_field_text_submitted(text: String) -> void:
 		parse_command(SPLIT_TEXT_.pop_front(), SPLIT_TEXT_)
 	else:
 		parse_command(SPLIT_TEXT_[0])
-	
-	# Cap the amount of responses to not bloat memory
-	while (
-		OutputFieldRef.get_paragraph_count() - 1 > MAX_RESPONSES
-		or OutputFieldRef.get_total_character_count() > MAX_CHAR_COUNT
-	):
-		OutputFieldRef.remove_paragraph(1)
 
 
 func parse_command(command: String, ARGS_: Array = []) -> void:
@@ -240,4 +242,5 @@ layout_mode = 2
 caret_blink = true
 
 [connection signal="close_requested" from="." to="." method="on_close_requested"]
+[connection signal="finished" from="ConsolePanel/MarginContainer/VBoxContainer/OutputField" to="." method="on_output_field_updated"]
 [connection signal="text_submitted" from="ConsolePanel/MarginContainer/VBoxContainer/InputField" to="." method="on_input_field_text_submitted"]
