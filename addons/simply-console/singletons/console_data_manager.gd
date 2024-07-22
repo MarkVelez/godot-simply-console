@@ -26,28 +26,11 @@ var COMMAND_LIST_: Dictionary = {
 		]
 	},
 	"clear": {
-		"target": null,
+		"target": "",
 		"type": CommandType.LOCAL,
 		"method": "clear_console",
 		"args": []
 	},
-	"test": {
-		"target": "LocalNode",
-		"type": CommandType.LOCAL,
-		"method": "test_method",
-		"args": [
-			{
-				"name": "arg1",
-				"type": TYPE_INT,
-				"optional": true
-			},
-			{
-				"name": "arg2",
-				"type": TYPE_STRING,
-				"optional": true
-			}
-		]
-	}
 }
 
 

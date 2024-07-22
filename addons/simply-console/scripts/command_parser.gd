@@ -61,7 +61,7 @@ func parse_command(command: String, ARGS_: Array = []) -> String:
 
 
 func get_command_target(command: String) -> Node:
-	var target = ConsoleDataManager.COMMAND_LIST_[command]["target"]
+	var target: String = ConsoleDataManager.COMMAND_LIST_[command]["target"]
 	var type: int = ConsoleDataManager.COMMAND_LIST_[command]["type"]
 	
 	match type:
@@ -69,7 +69,7 @@ func get_command_target(command: String) -> Node:
 			return get_node("/root/" + target)
 		
 		ConsoleDataManager.CommandType.LOCAL:
-			if target == null:
+			if target.is_empty():
 				return get_parent()
 			
 			return get_tree().root.find_child(target, true , false)

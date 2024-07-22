@@ -56,6 +56,10 @@ func on_input_field_text_submitted(text: String) -> void:
 		)
 
 
+func escape_bbcode(text: String) -> String:
+	return text.replace(\"[\", \"[lb]\")
+
+
 func output_text(text: String, color := Color.WHITE) -> void:
 	if color != Color.WHITE: 
 		OutputFieldRef.push_color(color)
@@ -75,10 +79,6 @@ func output_error(text: String) -> void:
 
 func output_comment(text: String) -> void:
 	output_text(text, Color.DARK_GRAY)
-
-
-func escape_bbcode(text: String) -> String:
-	return text.replace(\"[\", \"[lb]\")
 
 
 func clear_console() -> void:
