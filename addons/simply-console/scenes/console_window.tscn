@@ -45,15 +45,13 @@ func on_input_field_text_submitted(text: String) -> void:
 	InputFieldRef.clear()
 	# Escape bbcode tags to avoid possible issues
 	text = escape_bbcode(text)
+	# Separate the command name and the arguments
 	var SPLIT_TEXT_ := Array(text.split(\" \"))
-	if SPLIT_TEXT_.size() > 1:
-		output_text(
-			CommandParserRef.parse_command(SPLIT_TEXT_.pop_front(), SPLIT_TEXT_)
-		)
-	else:
-		output_text(
-			CommandParserRef.parse_command(SPLIT_TEXT_[0])
-		)
+	var response: String =\\
+		CommandParserRef.parse_command(SPLIT_TEXT_.pop_front(), SPLIT_TEXT_)
+	
+	if not response.is_empty():
+		output_text(response)
 
 
 func escape_bbcode(text: String) -> String:
