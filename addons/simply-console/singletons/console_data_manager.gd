@@ -1,3 +1,4 @@
+@tool
 extends Node
 
 # GLOBAL = Singleton(Autorun)
@@ -38,11 +39,13 @@ func _ready() -> void:
 	# Verify the directory
 	DirAccess.make_dir_absolute(DIRECTORY)
 	
-	if FileAccess.file_exists(PATH):
-		call_deferred("get_data")
-	else:
-		save_data()
-		push_warning("No command list file found.")
+	# Stop automatically loading data in the editor
+	if not Engine.is_editor_hint():
+		if FileAccess.file_exists(PATH):
+			call_deferred("get_data")
+		else:
+			save_data()
+			push_warning("No command list file found.")
 
 
 func save_data() -> void:

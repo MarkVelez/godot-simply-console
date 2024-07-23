@@ -1,0 +1,143 @@
+[gd_scene load_steps=5 format=3 uid="uid://dqu6wskkw42qx"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t3p81"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.185212, 0.192395, 0.219524, 1)
+border_width_top = 24
+border_color = Color(0.185212, 0.192395, 0.219524, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+corner_detail = 3
+shadow_color = Color(0, 0, 0, 0.3)
+anti_aliasing = false
+
+[sub_resource type="GDScript" id="GDScript_o1rfh"]
+resource_name = "argument"
+script/source = "@tool
+extends PanelContainer
+
+# Buttons References
+@export var UpButtonRef: Button
+@export var DownButtonRef: Button
+@export var RemoveButtonRef: Button
+
+# Argument Info References
+@onready var ArgumentNameRef: LineEdit =\\
+	$HBoxContainer/Content/Name/ArgumentName
+@onready var ArgumentTypeRef: OptionButton =\\
+	$HBoxContainer/Content/Type/ArgumentType
+@onready var OptionalArgumentRef: CheckBox =\\
+	$HBoxContainer/Content/Optional/OptionalArgument
+
+
+func _ready() -> void:
+	UpButtonRef.set_button_icon(get_theme_icon(\"MoveUp\", \"EditorIcons\"))
+	DownButtonRef.set_button_icon(get_theme_icon(\"MoveDown\", \"EditorIcons\"))
+	RemoveButtonRef.set_button_icon(get_theme_icon(\"Remove\", \"EditorIcons\"))
+
+
+func init_argument_info(ARGUMENT_INFO_: Dictionary) -> void:
+	ArgumentNameRef.set_text(ARGUMENT_INFO_[\"name\"])
+	ArgumentTypeRef.select(ARGUMENT_INFO_[\"type\"])
+	OptionalArgumentRef.set_pressed(ARGUMENT_INFO_[\"optional\"])
+"
+
+[sub_resource type="Image" id="Image_260h3"]
+data = {
+"data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 93, 93, 41, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 44, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 44, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 94, 94, 234, 255, 95, 95, 43, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 94, 94, 234, 255, 95, 95, 43, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0),
+"format": "RGBA8",
+"height": 16,
+"mipmaps": false,
+"width": 16
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_h1u5s"]
+image = SubResource("Image_260h3")
+
+[node name="Argument" type="PanelContainer" node_paths=PackedStringArray("UpButtonRef", "DownButtonRef", "RemoveButtonRef")]
+theme_override_styles/panel = SubResource("StyleBoxFlat_t3p81")
+script = SubResource("GDScript_o1rfh")
+UpButtonRef = NodePath("HBoxContainer/MoveButtons/Up")
+DownButtonRef = NodePath("HBoxContainer/MoveButtons/Down")
+RemoveButtonRef = NodePath("HBoxContainer/Remove")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MoveButtons" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+
+[node name="Up" type="Button" parent="HBoxContainer/MoveButtons"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+icon = SubResource("ImageTexture_h1u5s")
+
+[node name="Down" type="Button" parent="HBoxContainer/MoveButtons"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+icon = SubResource("ImageTexture_h1u5s")
+
+[node name="Content" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="HBoxContainer" parent="HBoxContainer/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/Content/Name"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Argument Name"
+
+[node name="ArgumentName" type="LineEdit" parent="HBoxContainer/Content/Name"]
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="Type" type="HBoxContainer" parent="HBoxContainer/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/Content/Type"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Argument Type"
+
+[node name="ArgumentType" type="OptionButton" parent="HBoxContainer/Content/Type"]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 3
+selected = 0
+popup/item_0/text = "STRING"
+popup/item_0/id = 0
+popup/item_1/text = "INT"
+popup/item_1/id = 1
+popup/item_2/text = "FLOAT"
+popup/item_2/id = 2
+
+[node name="Optional" type="HBoxContainer" parent="HBoxContainer/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/Content/Optional"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Optional"
+
+[node name="OptionalArgument" type="CheckBox" parent="HBoxContainer/Content/Optional"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "On"
+
+[node name="Remove" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+icon = SubResource("ImageTexture_h1u5s")

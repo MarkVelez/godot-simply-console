@@ -1,0 +1,243 @@
+[gd_scene load_steps=5 format=3 uid="uid://4vd7b7ma18k4"]
+
+[ext_resource type="PackedScene" uid="uid://dqu6wskkw42qx" path="res://addons/simply-console/scenes/argument.tscn" id="1_yuuex"]
+
+[sub_resource type="GDScript" id="GDScript_hwlsh"]
+resource_name = "command_editor"
+script/source = "@tool
+extends Window
+
+@onready var CommandListRef: OptionButton = %CommandList
+
+func init_window() -> void:
+	connect(\"close_requested\", on_close_requested)
+	# Load the command list data manually
+	ConsoleDataManager.get_data()
+	fill_command_list()
+
+
+func on_close_requested() -> void:
+	# Unload the command list data to save memory
+	ConsoleDataManager.COMMAND_LIST_.clear()
+	queue_free()
+
+
+func fill_command_list() -> void:
+	for command in ConsoleDataManager.COMMAND_LIST_.keys():
+		CommandListRef.add_item(command)
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_goikg"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.185212, 0.192395, 0.219524, 1)
+border_width_top = 24
+border_color = Color(0.185212, 0.192395, 0.219524, 1)
+corner_detail = 3
+expand_margin_top = 24.0
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 4
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ayl8k"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.210469, 0.218631, 0.249459, 1)
+border_color = Color(0.1347, 0.139924, 0.159654, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 3
+anti_aliasing = false
+
+[node name="CommandEditor" type="Window"]
+disable_3d = true
+title = "Command Editor"
+initial_position = 2
+size = Vector2i(512, 512)
+transient = true
+exclusive = true
+script = SubResource("GDScript_hwlsh")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_goikg")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TabContainer" type="TabContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"TabContainerOdd"
+
+[node name="Editor" type="TabBar" parent="Panel/VBoxContainer/TabContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/TabContainer/Editor"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ayl8k")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="List" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "List of all the existing commands.
+Selecting an existing command will allow you
+to edit it.
+Selecting <new> will let you create a new command."
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/List"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command List"
+
+[node name="CommandList" type="OptionButton" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/List"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 1
+selected = 0
+popup/item_0/text = "<new>"
+popup/item_0/id = 0
+
+[node name="Name" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The name that will be used to call the command inside of the console.
+Leave empty to use the console directly."
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Name"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command Name"
+
+[node name="CommandName" type="LineEdit" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Name"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="Type" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The scope of the command.
+A GLOBAL command can call a method from an autoload.
+A LOCAL command can only call a method from a node in the current scene tree.
+
+LOCAL commands can be significantly slower compared to GLOBAL commands 
+as they do not have a direct reference to the target node. 
+Therefore if you have to use a LOCAL command, 
+try to put the target node as close to the root as possible and avoid nesting."
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Type"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command Type"
+
+[node name="CommandType" type="OptionButton" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Type"]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 2
+selected = 0
+popup/item_0/text = "GLOBAL"
+popup/item_0/id = 0
+popup/item_1/text = "LOCAL"
+popup/item_1/id = 1
+
+[node name="Target" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The name of the target node that has the method that the command will call."
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Target"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Target Name"
+
+[node name="TargetName" type="LineEdit" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Target"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="Method" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The method that the command will call."
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Method"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Target Method"
+
+[node name="TargetMethod" type="LineEdit" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Method"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Arguments" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Arguments for the command.
+Arguments can be optional, when doing so
+do not forget to assign a default value
+to the corresponding argument of the 
+method being called.
+Arguments are added sequentially so the
+argument name is more of a descriptor."
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command Arguments"
+
+[node name="ArgumentList" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments"]
+layout_mode = 2
+
+[node name="Argument" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments/ArgumentList" instance=ExtResource("1_yuuex")]
+layout_mode = 2
+
+[node name="Argument2" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments/ArgumentList" instance=ExtResource("1_yuuex")]
+layout_mode = 2
+
+[node name="AddArgument" type="Button" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Add Argument"
+
+[node name="Save" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Save"
