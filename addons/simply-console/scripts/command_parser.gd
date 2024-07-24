@@ -2,7 +2,7 @@ extends Node
 class_name CommandParser
 
 
-func parse_command(command: String, ARGUMENTS_: Array = []) -> String:
+func parse_command(command: String, ARGUMENTS_: PackedStringArray = []) -> String:
 	if not ConsoleDataManager.COMMAND_LIST_.has(command):
 		return "Command '" + command + "' does not exist."
 	
@@ -81,7 +81,10 @@ func get_command_target(command: String) -> Node:
 	return null
 
 
-func arguments_optional(METHOD_ARGUMENTS_: Array, ARGUMENTS_: Array) -> bool:
+func arguments_optional(
+	METHOD_ARGUMENTS_: Array,
+	ARGUMENTS_: Array[String]
+) -> bool:
 	if not ARGUMENTS_.is_empty():
 		return false
 	
@@ -95,7 +98,10 @@ func arguments_optional(METHOD_ARGUMENTS_: Array, ARGUMENTS_: Array) -> bool:
 	return true
 
 
-func parse_argument_list(METHOD_ARGUMENTS_: Array, ARGUMENTS_: Array) -> Dictionary:
+func parse_argument_list(
+	METHOD_ARGUMENTS_: Array,
+	ARGUMENTS_: PackedStringArray
+) -> Dictionary:
 	var PARSED_ARGUMENTS_: Dictionary = {
 		"argumentList": []
 	}
@@ -105,6 +111,7 @@ func parse_argument_list(METHOD_ARGUMENTS_: Array, ARGUMENTS_: Array) -> Diction
 	for ARGUMENT_ in METHOD_ARGUMENTS_:
 		var argument: String = ARGUMENTS_[i]
 		
+		# Type match and convert command argument to method argument
 		match int(ARGUMENT_["type"]):
 			TYPE_STRING:
 				PARSED_ARGUMENTS_["argumentList"].append(argument)

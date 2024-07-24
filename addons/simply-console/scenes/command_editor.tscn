@@ -1,19 +1,32 @@
 [gd_scene load_steps=5 format=3 uid="uid://4vd7b7ma18k4"]
 
-[ext_resource type="PackedScene" uid="uid://dqu6wskkw42qx" path="res://addons/simply-console/scenes/argument.tscn" id="1_yuuex"]
-
 [sub_resource type="GDScript" id="GDScript_hwlsh"]
 resource_name = "command_editor"
 script/source = "@tool
 extends Window
 
+# Field references
 @onready var CommandListRef: OptionButton = %CommandList
+@onready var CommandNameRef: LineEdit = %CommandName
+@onready var CommandTypeRef: OptionButton = %CommandType
+@onready var TargetNameRef: LineEdit = %TargetName
+@onready var TargetMethodRef: LineEdit = %TargetMethod
+@onready var ArgumentsRef: VBoxContainer = %Arguments
+
+# Command button references
+@onready var UpdateCommandRef: Button = %UpdateCommand
+@onready var RemoveCommandRef: Button = %RemoveCommand
+
+# Warning label references
+@onready var CommandNameWarningRef: Label = %CommandNameWarning
+@onready var TargetMethodWarningRef: Label = %TargetMethodWarning
+
 
 func init_window() -> void:
 	connect(\"close_requested\", on_close_requested)
 	# Load the command list data manually
 	ConsoleDataManager.get_data()
-	fill_command_list()
+	update_command_list()
 
 
 func on_close_requested() -> void:
@@ -22,9 +35,147 @@ func on_close_requested() -> void:
 	queue_free()
 
 
-func fill_command_list() -> void:
+func on_command_list_item_selected(index: int) -> void:
+	# New command selected
+	if index == 0:
+		update_fields()
+		ArgumentsRef.update_argument_list()
+		UpdateCommandRef.set_text(\"Add Command\")
+		RemoveCommandRef.hide()
+		return
+	
+	# Existing command selected
+	var commandName: String = CommandListRef.get_item_text(index)
+	var ARGUMENT_LIST_: Array =\\
+		ConsoleDataManager.COMMAND_LIST_[commandName][\"argumentList\"]
+	
+	CommandNameRef.set_text(commandName)
+	update_fields(ConsoleDataManager.COMMAND_LIST_[commandName])
+	ArgumentsRef.update_argument_list(ARGUMENT_LIST_)
+	UpdateCommandRef.set_text(\"Edit Command\")
+	RemoveCommandRef.show()
+
+
+func update_command_list() -> void:
 	for command in ConsoleDataManager.COMMAND_LIST_.keys():
 		CommandListRef.add_item(command)
+
+
+func update_fields(COMMAND_INFO_: Dictionary = {}) -> void:
+	# Clear input fields
+	if COMMAND_INFO_.is_empty():
+		CommandNameRef.clear()
+		CommandTypeRef.select(0)
+		TargetNameRef.clear()
+		TargetMethodRef.clear()
+		return
+	
+	# Populate input fields
+	CommandTypeRef.select(COMMAND_INFO_[\"type\"])
+	TargetNameRef.set_text(COMMAND_INFO_[\"target\"])
+	TargetMethodRef.set_text(COMMAND_INFO_[\"method\"])
+
+
+func on_update_command_pressed() -> void:
+	if not validate_data():
+		return
+	
+	var commandName: String = CommandNameRef.get_text()
+	
+	# Update existing command
+	if ConsoleDataManager.COMMAND_LIST_.has(commandName):
+		var COMMAND_INFO_: Dictionary =\\
+			ConsoleDataManager.COMMAND_LIST_[commandName]
+		
+		COMMAND_INFO_[\"target\"] = TargetNameRef.get_text()
+		COMMAND_INFO_[\"type\"] = CommandTypeRef.get_selected()
+		COMMAND_INFO_[\"method\"] = TargetMethodRef.get_text()
+		COMMAND_INFO_[\"argumentList\"] =\\
+			ArgumentsRef.ARGUMENT_LIST_.duplicate(true)
+		return
+	
+	# Add new command
+	var commandListName: String =\\
+		CommandListRef.get_item_text(CommandListRef.selected)
+	ConsoleDataManager.COMMAND_LIST_[commandName] = {}
+	var NEW_COMMAND_: Dictionary =\\
+		ConsoleDataManager.COMMAND_LIST_[commandName]
+	
+	# Check if the command name was changed on an existing command
+	if ConsoleDataManager.COMMAND_LIST_.has(commandListName):
+		ConsoleDataManager.COMMAND_LIST_.erase(commandListName)
+		CommandListRef.remove_item(CommandListRef.selected)
+	
+	CommandListRef.add_item(commandName)
+	NEW_COMMAND_[\"target\"] = TargetNameRef.get_text()
+	NEW_COMMAND_[\"type\"] = CommandTypeRef.get_selected()
+	NEW_COMMAND_[\"method\"] = TargetMethodRef.get_text()
+	NEW_COMMAND_[\"argumentList\"] =\\
+		ArgumentsRef.ARGUMENT_LIST_.duplicate(true)
+	
+	# Clear input fields
+	CommandListRef.select(0)
+	on_command_list_item_selected(0)
+
+
+func validate_data() -> bool:
+	var commandName: String = CommandNameRef.get_text()
+	var commandListName: String =\\
+		CommandListRef.get_item_text(CommandListRef.selected)
+	var isValid: bool = true
+	
+	# Check if command name already exist
+	if (
+		ConsoleDataManager.COMMAND_LIST_.has(commandName)
+		and commandName != commandListName
+	):
+		CommandNameWarningRef.set_text(\"Command already exists.\")
+		CommandNameWarningRef.show()
+		isValid = false
+	
+	# Check if command name is empty
+	if commandName.is_empty():
+		CommandNameWarningRef.set_text(\"Command must have a name.\")
+		CommandNameWarningRef.show()
+		isValid = false
+	
+	if isValid:
+		CommandNameWarningRef.hide()
+	
+	# Check if target method is empty
+	if TargetMethodRef.text.is_empty():
+		TargetMethodWarningRef.show()
+		isValid = false
+	else:
+		TargetMethodWarningRef.hide()
+	
+	return isValid
+
+
+func on_remove_command_pressed() -> void:
+	ConsoleDataManager.COMMAND_LIST_.erase(
+		CommandListRef.get_item_text(CommandListRef.selected)
+	)
+	
+	CommandListRef.remove_item(CommandListRef.selected)
+	CommandListRef.select(0)
+	on_command_list_item_selected(0)
+
+
+func on_save_pressed() -> void:
+	ConsoleDataManager.save_data()
+
+
+func on_command_name_text_submitted(_text) -> void:
+	CommandNameRef.release_focus()
+
+
+func on_target_name_submitted(_text) -> void:
+	TargetNameRef.release_focus()
+
+
+func _on_target_method_submitted(_text) -> void:
+	TargetMethodRef.release_focus()
 "
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_goikg"]
@@ -54,6 +205,42 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 3
 anti_aliasing = false
+
+[sub_resource type="GDScript" id="GDScript_ciwlr"]
+resource_name = "arguments"
+script/source = "@tool
+extends VBoxContainer
+
+@onready var ArgumentListRef: VBoxContainer = %ArgumentList
+
+const ArgumentScene: PackedScene =\\
+	preload(\"res://addons/simply-console/scenes/argument.tscn\")
+
+var ARGUMENT_LIST_: Array[Dictionary]
+
+
+func on_add_argument_pressed() -> void:
+	var ArgumentRef: Control = ArgumentScene.instantiate()
+	ArgumentListRef.add_child(ArgumentRef)
+	ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
+
+
+func update_argument_list(ARGUMENTS_: Array = []) -> void:
+	if ARGUMENTS_.is_empty():
+		for child in ArgumentListRef.get_children():
+			child.queue_free()
+		
+		ARGUMENT_LIST_.clear()
+		return
+	
+	for ARGUMENT_ in ARGUMENTS_:
+		var ArgumentRef: Control = ArgumentScene.instantiate()
+		ArgumentRef.init_argument_info(ARGUMENT_)
+		ArgumentListRef.add_child(ArgumentRef)
+		ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
+
+
+"
 
 [node name="CommandEditor" type="Window"]
 disable_3d = true
@@ -164,6 +351,7 @@ size_flags_horizontal = 3
 text = "Command Type"
 
 [node name="CommandType" type="OptionButton" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Type"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 item_count = 2
@@ -207,6 +395,7 @@ caret_blink = true
 layout_mode = 2
 
 [node name="Arguments" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Arguments for the command.
 Arguments can be optional, when doing so
@@ -216,6 +405,7 @@ method being called.
 Arguments are added sequentially so the
 argument name is more of a descriptor."
 theme_override_constants/separation = 8
+script = SubResource("GDScript_ciwlr")
 
 [node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments"]
 layout_mode = 2
@@ -223,12 +413,7 @@ size_flags_horizontal = 3
 text = "Command Arguments"
 
 [node name="ArgumentList" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments"]
-layout_mode = 2
-
-[node name="Argument" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments/ArgumentList" instance=ExtResource("1_yuuex")]
-layout_mode = 2
-
-[node name="Argument2" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments/ArgumentList" instance=ExtResource("1_yuuex")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="AddArgument" type="Button" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments"]
@@ -236,8 +421,50 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Add Argument"
 
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CommandNameWarning" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "Command already exists."
+
+[node name="TargetMethodWarning" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "Command must have a target method."
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="UpdateCommand" type="Button" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add Command"
+
+[node name="RemoveCommand" type="Button" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove Command"
+
 [node name="Save" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 text = "Save"
+
+[connection signal="item_selected" from="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/List/CommandList" to="." method="on_command_list_item_selected"]
+[connection signal="text_submitted" from="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Name/CommandName" to="." method="on_command_name_text_submitted"]
+[connection signal="text_submitted" from="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Target/TargetName" to="." method="on_target_name_submitted"]
+[connection signal="text_submitted" from="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Method/TargetMethod" to="." method="_on_target_method_submitted"]
+[connection signal="pressed" from="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments/AddArgument" to="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/Arguments" method="on_add_argument_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/HBoxContainer/UpdateCommand" to="." method="on_update_command_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer/HBoxContainer/RemoveCommand" to="." method="on_remove_command_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/Save" to="." method="on_save_pressed"]
