@@ -92,6 +92,9 @@ func on_update_command_pressed() -> void:
 		COMMAND_INFO_[\"method\"] = TargetMethodRef.get_text()
 		COMMAND_INFO_[\"argumentList\"] =\\
 			ArgumentsRef.ARGUMENT_LIST_.duplicate(true)
+		
+		CommandListRef.select(0)
+		on_command_list_item_selected(0)
 		return
 	
 	# Add new command
@@ -217,15 +220,28 @@ const ArgumentScene: PackedScene =\\
 	preload(\"res://addons/simply-console/scenes/argument.tscn\")
 
 var ARGUMENT_LIST_: Array[Dictionary]
+var argumentCount: int = 0
 
 
 func on_add_argument_pressed() -> void:
-	var ArgumentRef: Control = ArgumentScene.instantiate()
-	ArgumentListRef.add_child(ArgumentRef)
-	ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
+	if argumentCount >= 1:
+		ArgumentListRef.get_child(argumentCount - 1).DownButtonRef.show()
+	
+	argumentCount += 1
+	create_argument()
+
+
+func remove_argument(ArgumentRef: Control) -> void:
+	argumentCount -= 1
+	ARGUMENT_LIST_.remove_at(ArgumentRef.get_index())
+	ArgumentRef.queue_free()
+	
+	if argumentCount > 0:
+		ArgumentListRef.get_child(argumentCount - 1).DownButtonRef.hide()
 
 
 func update_argument_list(ARGUMENTS_: Array = []) -> void:
+	argumentCount = ARGUMENTS_.size()
 	if ARGUMENTS_.is_empty():
 		for child in ArgumentListRef.get_children():
 			child.queue_free()
@@ -234,12 +250,62 @@ func update_argument_list(ARGUMENTS_: Array = []) -> void:
 		return
 	
 	for ARGUMENT_ in ARGUMENTS_:
-		var ArgumentRef: Control = ArgumentScene.instantiate()
+		var ArgumentRef: Control = create_argument()
 		ArgumentRef.init_argument_info(ARGUMENT_)
-		ArgumentListRef.add_child(ArgumentRef)
-		ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
 
 
+func create_argument() -> Control:
+	var ArgumentRef: Control = ArgumentScene.instantiate()
+	ArgumentRef.UpButtonRef.connect(
+		\"pressed\",
+		move_argument_up.bind(ArgumentRef)
+	)
+	ArgumentRef.DownButtonRef.connect(
+		\"pressed\",
+		move_argument_down.bind(ArgumentRef)
+	)
+	ArgumentRef.RemoveButtonRef.connect(
+		\"pressed\",
+		remove_argument.bind(ArgumentRef)
+	)
+	ArgumentListRef.add_child(ArgumentRef)
+	ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
+	
+	if ArgumentRef.get_index() == 0:
+		ArgumentRef.UpButtonRef.hide()
+	
+	if ArgumentRef.get_index() == argumentCount - 1:
+			ArgumentRef.DownButtonRef.hide()
+	
+	return ArgumentRef
+
+
+func move_argument_up(ArgumentRef: Control) -> void:
+	var argumentIndex: int = ArgumentRef.get_index()
+	var ARGUMENT_INFO_: Dictionary = ARGUMENT_LIST_.pop_at(argumentIndex)
+	
+	# Shift argument up
+	ARGUMENT_LIST_.insert(argumentIndex - 1, ARGUMENT_INFO_)
+	ArgumentListRef.move_child(ArgumentRef, argumentIndex - 1)
+	
+	if ArgumentRef.get_index() == 0:
+		ArgumentRef.UpButtonRef.hide()
+	
+	ArgumentRef.DownButtonRef.show()
+
+
+func move_argument_down(ArgumentRef: Control) -> void:
+	var argumentIndex: int = ArgumentRef.get_index()
+	var ARGUMENT_INFO_: Dictionary = ARGUMENT_LIST_.pop_at(argumentIndex)
+	
+	# Shift argument down
+	ARGUMENT_LIST_.insert(argumentIndex + 1, ARGUMENT_INFO_)
+	ArgumentListRef.move_child(ArgumentRef, argumentIndex + 1)
+	
+	if ArgumentRef.get_index() == argumentCount - 1:
+		ArgumentRef.DownButtonRef.hide()
+	
+	ArgumentRef.UpButtonRef.show()
 "
 
 [node name="CommandEditor" type="Window"]
