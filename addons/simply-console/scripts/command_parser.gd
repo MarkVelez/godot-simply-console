@@ -129,6 +129,17 @@ func parse_argument_list(
 				else:
 					invalidArgument = i + 1
 					break
+			
+			TYPE_BOOL:
+				match argument:
+					"true":
+						PARSED_ARGUMENTS_["argumentList"].append(true)
+					"false":
+						PARSED_ARGUMENTS_["argumentList"].append(false)
+					_:
+						invalidArgument = i + 1
+						break
+			
 		
 		if i == ARGUMENTS_.size() - 1:
 			break
