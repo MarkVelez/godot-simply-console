@@ -106,47 +106,125 @@ func parse_argument_list(
 		"argumentList": []
 	}
 	var i: int = 0
-	var invalidArgument: int = 0
+	var invalidArgument: int = -1
 	
 	for ARGUMENT_ in METHOD_ARGUMENTS_:
 		var argument: String = ARGUMENTS_[i]
-		
 		# Type match and convert command argument to method argument
-		match int(ARGUMENT_["type"]):
-			TYPE_STRING:
-				PARSED_ARGUMENTS_["argumentList"].append(argument)
-			
-			TYPE_INT:
-				if argument.is_valid_int():
-					PARSED_ARGUMENTS_["argumentList"].append(int(argument))
-				else:
-					invalidArgument = i + 1
-					break
-			
-			TYPE_FLOAT:
-				if argument.is_valid_float():
-					PARSED_ARGUMENTS_["argumentList"].append(float(argument))
-				else:
-					invalidArgument = i + 1
-					break
-			
-			TYPE_BOOL:
-				match argument:
-					"true":
-						PARSED_ARGUMENTS_["argumentList"].append(true)
-					"false":
-						PARSED_ARGUMENTS_["argumentList"].append(false)
-					_:
-						invalidArgument = i + 1
-						break
-			
+		invalidArgument = parse_argument_type(
+			PARSED_ARGUMENTS_,
+			int(ARGUMENT_["type"]),
+			argument,
+			i
+		)
+		if invalidArgument > -1:
+			PARSED_ARGUMENTS_["invalidArgument"] = invalidArgument
+			break
 		
 		if i == ARGUMENTS_.size() - 1:
 			break
 		
 		i += 1
-		
-	if invalidArgument > 0:
-		PARSED_ARGUMENTS_["invalidArgument"] = invalidArgument
 	
 	return PARSED_ARGUMENTS_
+
+
+func parse_argument_type(
+	PARSED_ARGUMENTS_: Dictionary,
+	type: int,
+	argument: String,
+	i: int
+) -> int:
+	match type:
+		TYPE_STRING:
+			PARSED_ARGUMENTS_["argumentList"].append(argument)
+		
+		TYPE_INT:
+			if argument.is_valid_int():
+				PARSED_ARGUMENTS_["argumentList"].append(int(argument))
+			else:
+				return i
+		
+		TYPE_FLOAT:
+			if argument.is_valid_float():
+				PARSED_ARGUMENTS_["argumentList"].append(float(argument))
+			else:
+				return i
+		
+		TYPE_BOOL:
+			match argument:
+				"true":
+					PARSED_ARGUMENTS_["argumentList"].append(true)
+				"false":
+					PARSED_ARGUMENTS_["argumentList"].append(false)
+				_:
+					return i
+		
+		TYPE_VECTOR2, TYPE_VECTOR2I:
+			if argument[0] == "(" and argument[argument.length() - 1] == ")":
+				var isIntOnly: bool = false if type == TYPE_VECTOR2 else true
+				var AXISES_: PackedStringArray =\
+					parse_vector(argument, 2, false)
+				
+				if AXISES_.is_empty():
+					return i
+				
+				PARSED_ARGUMENTS_["argumentList"].append(
+					Vector2(
+						float(AXISES_[0]),
+						float(AXISES_[1])
+					) if type == TYPE_VECTOR2 else Vector2i(
+						int(AXISES_[0]),
+						int(AXISES_[1])
+					)
+				)
+			else:
+				return i
+		
+		TYPE_VECTOR3, TYPE_VECTOR3I:
+			if argument[0] == "(" and argument[argument.length() - 1] == ")":
+				var isIntOnly: bool = false if type == TYPE_VECTOR3 else true
+				var AXISES_: PackedStringArray =\
+					parse_vector(argument, 3, false)
+				
+				if AXISES_.is_empty():
+					return i
+				
+				PARSED_ARGUMENTS_["argumentList"].append(
+					Vector3(
+						float(AXISES_[0]),
+						float(AXISES_[1]),
+						float(AXISES_[2])
+					) if type == TYPE_VECTOR3 else Vector3i(
+						int(AXISES_[0]),
+						int(AXISES_[1]),
+						int(AXISES_[2])
+					)
+				)
+			else:
+				return i
+	
+	return -1
+
+
+func parse_vector(
+	argument: String,
+	axisCount: int,
+	isIntOnly: bool
+) -> PackedStringArray:
+	argument = argument.trim_prefix("(")
+	argument = argument.trim_suffix(")")
+	var AXISES_: PackedStringArray = argument.split(",", false)
+	
+	if AXISES_.size() > axisCount:
+		return []
+	
+	for axis in AXISES_:
+		if isIntOnly:
+			if not axis.is_valid_int():
+				return []
+		else:
+			if not axis.is_valid_float():
+				return []
+	
+	return AXISES_
