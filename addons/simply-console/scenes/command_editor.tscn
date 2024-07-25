@@ -236,8 +236,20 @@ func remove_argument(ArgumentRef: Control) -> void:
 	ARGUMENT_LIST_.remove_at(ArgumentRef.get_index())
 	ArgumentRef.queue_free()
 	
-	if argumentCount > 0:
-		ArgumentListRef.get_child(argumentCount - 1).DownButtonRef.hide()
+	# Wait for the argument to be deleted
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	# Hide both buttons if there is only one argument
+	if argumentCount == 1:
+		ArgumentRef = ArgumentListRef.get_child(0)
+		ArgumentRef.UpButtonRef.hide()
+		ArgumentRef.DownButtonRef.hide()
+		return
+	
+	# Update the remaining argument's buttons
+	for i in argumentCount:
+		update_move_buttons_visibility(i)
 
 
 func update_argument_list(ARGUMENTS_: Array = []) -> void:
@@ -271,11 +283,7 @@ func create_argument() -> Control:
 	ArgumentListRef.add_child(ArgumentRef)
 	ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
 	
-	if ArgumentRef.get_index() == 0:
-		ArgumentRef.UpButtonRef.hide()
-	
-	if ArgumentRef.get_index() == argumentCount - 1:
-			ArgumentRef.DownButtonRef.hide()
+	update_move_buttons_visibility(ArgumentRef.get_index())
 	
 	return ArgumentRef
 
@@ -288,10 +296,9 @@ func move_argument_up(ArgumentRef: Control) -> void:
 	ARGUMENT_LIST_.insert(argumentIndex - 1, ARGUMENT_INFO_)
 	ArgumentListRef.move_child(ArgumentRef, argumentIndex - 1)
 	
-	if ArgumentRef.get_index() == 0:
-		ArgumentRef.UpButtonRef.hide()
-	
-	ArgumentRef.DownButtonRef.show()
+	# Update visibility for moved argument and its neighbors
+	update_move_buttons_visibility(argumentIndex - 1)
+	update_move_buttons_visibility(argumentIndex)
 
 
 func move_argument_down(ArgumentRef: Control) -> void:
@@ -302,10 +309,26 @@ func move_argument_down(ArgumentRef: Control) -> void:
 	ARGUMENT_LIST_.insert(argumentIndex + 1, ARGUMENT_INFO_)
 	ArgumentListRef.move_child(ArgumentRef, argumentIndex + 1)
 	
-	if ArgumentRef.get_index() == argumentCount - 1:
-		ArgumentRef.DownButtonRef.hide()
+	# Update visibility for moved argument and its neighbors
+	update_move_buttons_visibility(argumentIndex)
+	update_move_buttons_visibility(argumentIndex + 1)
+
+
+func update_move_buttons_visibility(index: int) -> void:
+	var argumentCount: int = ArgumentListRef.get_child_count()
+	var ArgumentRef: Control = ArgumentListRef.get_child(index)
 	
-	ArgumentRef.UpButtonRef.show()
+	# Update up button
+	if index == 0:
+		ArgumentRef.UpButtonRef.hide()
+	else:
+		ArgumentRef.UpButtonRef.show()
+	
+	# Update down button
+	if index == argumentCount - 1:
+		ArgumentRef.DownButtonRef.hide()
+	else:
+		ArgumentRef.DownButtonRef.show()
 "
 
 [node name="CommandEditor" type="Window"]
@@ -457,7 +480,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 caret_blink = true
 
-[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+[node name="ArgumentsSectionStart" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="Arguments" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
@@ -487,7 +510,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Add Argument"
 
-[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
+[node name="ArgumentsSectionEnd" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="CommandNameWarning" type="Label" parent="Panel/VBoxContainer/TabContainer/Editor/ScrollContainer/MarginContainer/VBoxContainer"]
