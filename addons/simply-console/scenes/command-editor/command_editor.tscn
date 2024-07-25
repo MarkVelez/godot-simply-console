@@ -263,6 +263,10 @@ func update_argument_list(ARGUMENTS_: Array = []) -> void:
 	if ARGUMENTS_.is_empty():
 		return
 	
+	# Wait for the argument to be deleted
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
 	for ARGUMENT_ in ARGUMENTS_:
 		var ArgumentRef: Control = create_argument()
 		ArgumentRef.init_argument_info(ARGUMENT_)
@@ -285,7 +289,11 @@ func create_argument() -> Control:
 	ArgumentListRef.add_child(ArgumentRef)
 	ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
 	
-	update_move_buttons_visibility(ArgumentRef.get_index())
+	if ArgumentRef.get_index() == 0:
+		ArgumentRef.UpButtonRef.hide()
+	
+	if ArgumentRef.get_index() == argumentCount - 1:
+		ArgumentRef.DownButtonRef.hide()
 	
 	return ArgumentRef
 
