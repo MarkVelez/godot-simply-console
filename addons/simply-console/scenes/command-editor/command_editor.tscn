@@ -254,11 +254,13 @@ func remove_argument(ArgumentRef: Control) -> void:
 
 func update_argument_list(ARGUMENTS_: Array = []) -> void:
 	argumentCount = ARGUMENTS_.size()
-	if ARGUMENTS_.is_empty():
+	if ArgumentListRef.get_child_count() > 0:
 		for child in ArgumentListRef.get_children():
 			child.queue_free()
 		
 		ARGUMENT_LIST_.clear()
+		
+	if ARGUMENTS_.is_empty():
 		return
 	
 	for ARGUMENT_ in ARGUMENTS_:
