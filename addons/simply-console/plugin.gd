@@ -2,7 +2,7 @@
 extends EditorPlugin
 
 const CommandEditor: PackedScene =\
-	preload("res://addons/simply-console/scenes/command_editor.tscn")
+	preload("res://addons/simply-console/scenes/command-editor/command_editor.tscn")
 
 var CommandEditorRef: Window
 
