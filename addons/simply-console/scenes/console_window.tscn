@@ -15,6 +15,13 @@ script/source = "extends Window
 const MAX_RESPONSES: int = 256
 const MAX_CHAR_COUNT: int = 8192
 
+# Command history limit
+const MAX_COMMAND_HISTORY: int = 16
+
+# Command history variables
+var COMMAND_HISTORY_: PackedStringArray
+var historyPosition: int = 0
+
 
 func _ready() -> void:
 	output_comment(
@@ -45,6 +52,7 @@ func on_input_field_text_submitted(text: String) -> void:
 	InputFieldRef.clear()
 	# Escape bbcode tags to avoid possible issues
 	text = escape_bbcode(text)
+	update_command_history(text)
 	# Separate the command name and the arguments
 	var SPLIT_TEXT_ := Array(text.split(\" \"))
 	var response: String =\\
@@ -58,6 +66,19 @@ func escape_bbcode(text: String) -> String:
 	return text.replace(\"[\", \"[lb]\")
 
 
+func update_command_history(text: String) -> void:
+	# Remove duplicate command history entry
+	if COMMAND_HISTORY_.has(text):
+		COMMAND_HISTORY_.remove_at(COMMAND_HISTORY_.find(text))
+	
+	COMMAND_HISTORY_.append(text)
+	historyPosition = COMMAND_HISTORY_.size()
+	
+	# Cap command history size
+	if COMMAND_HISTORY_.size() > MAX_COMMAND_HISTORY:
+		COMMAND_HISTORY_.remove_at(0)
+
+
 func output_text(text: String, color := Color.WHITE) -> void:
 	if color != Color.WHITE: 
 		OutputFieldRef.push_color(color)
@@ -65,6 +86,29 @@ func output_text(text: String, color := Color.WHITE) -> void:
 	OutputFieldRef.push_paragraph(HORIZONTAL_ALIGNMENT_LEFT)
 	OutputFieldRef.append_text(text)
 	OutputFieldRef.pop_all()
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		# Move up in command history
+		if (
+			event.pressed
+			and event.keycode == KEY_UP
+			and not COMMAND_HISTORY_.is_empty()
+		):
+			if historyPosition != 0:
+				historyPosition -= 1
+			InputFieldRef.set_text(COMMAND_HISTORY_[historyPosition])
+		
+		# Move down in command history
+		if (
+			event.pressed
+			and event.keycode == KEY_DOWN
+			and not COMMAND_HISTORY_.is_empty()
+		):
+			if historyPosition != COMMAND_HISTORY_.size() - 1:
+				historyPosition += 1
+			InputFieldRef.set_text(COMMAND_HISTORY_[historyPosition])
 
 
 func output_warning(text: String) -> void:
