@@ -39,13 +39,14 @@ func _ready() -> void:
 	# Verify the directory
 	DirAccess.make_dir_absolute(DIRECTORY)
 	
-	# Stop automatically loading data in the editor
-	if not Engine.is_editor_hint():
-		if FileAccess.file_exists(PATH):
+	# Check if the command list file exists
+	if FileAccess.file_exists(PATH):
+		# Stop automatically loading data in the editor
+		if not Engine.is_editor_hint():
 			call_deferred("get_data")
-		else:
-			save_data()
-			push_warning("No command list file found.")
+	else:
+		save_data()
+		push_warning("No command list file found.")
 
 
 func save_data() -> void:
