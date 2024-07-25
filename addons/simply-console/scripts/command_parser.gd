@@ -50,7 +50,7 @@ func parse_command(command: String, ARGUMENTS_: PackedStringArray = []) -> Strin
 	if PARSED_ARGUMENTS_.has("invalidArgument"):
 		return (
 			"Invalid type for argument "
-			+ str(PARSED_ARGUMENTS_["invalidArgument"])
+			+ str(PARSED_ARGUMENTS_["invalidArgument"] + 1)
 			+ " expected '"
 			+ type_string(
 				METHOD_ARGUMENTS_[PARSED_ARGUMENTS_["invalidArgument"]]["type"]
@@ -216,7 +216,7 @@ func parse_vector(
 	argument = argument.trim_suffix(")")
 	var AXISES_: PackedStringArray = argument.split(",", false)
 	
-	if AXISES_.size() > axisCount:
+	if AXISES_.size() != axisCount:
 		return []
 	
 	for axis in AXISES_:
