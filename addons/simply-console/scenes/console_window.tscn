@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://cmrfdlp25wcby"]
+[gd_scene load_steps=6 format=3 uid="uid://cmrfdlp25wcby"]
 
 [ext_resource type="Script" path="res://addons/simply-console/scripts/command_parser.gd" id="1_oe0g5"]
+[ext_resource type="Script" path="res://addons/simply-console/scripts/command_lexer.gd" id="2_mcw8w"]
 
 [sub_resource type="GDScript" id="GDScript_u0mjt"]
 resource_name = "console_window"
@@ -10,6 +11,7 @@ script/source = "extends Window
 @onready var OutputFieldRef: RichTextLabel = %OutputField
 @onready var InputFieldRef: LineEdit = %InputField
 @onready var CommandParserRef: Node = $CommandParser
+@onready var CommandLexerRef: Node = $CommandLexer
 
 # Response limits
 const MAX_RESPONSES: int = 256
@@ -77,9 +79,12 @@ func on_input_field_text_submitted(text: String) -> void:
 	text = escape_bbcode(text)
 	update_command_history(text)
 	# Separate the command name and the arguments
-	var SPLIT_TEXT_ := Array(text.split(\" \"))
+	var processedText_: PackedStringArray =\\
+		CommandLexerRef.process_input_text(text)
+	var command: String = processedText_[0]
+	processedText_.remove_at(0)
 	var response: String =\\
-		CommandParserRef.parse_command(SPLIT_TEXT_.pop_front(), SPLIT_TEXT_)
+		CommandParserRef.parse_command(command, processedText_)
 	
 	if not response.is_empty():
 		output_text(response)
@@ -147,6 +152,9 @@ script = SubResource("GDScript_u0mjt")
 
 [node name="CommandParser" type="Node" parent="."]
 script = ExtResource("1_oe0g5")
+
+[node name="CommandLexer" type="Node" parent="."]
+script = ExtResource("2_mcw8w")
 
 [node name="ConsolePanel" type="PanelContainer" parent="."]
 anchors_preset = 15

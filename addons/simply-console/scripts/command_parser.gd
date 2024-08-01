@@ -1,7 +1,9 @@
 extends Node
 class_name CommandParser
+## Used to parse and interpert commands and arguments.
 
 
+## Parses a command and it's arguments, if it has any, and executes them if they are valid.
 func parse_command(command: String, ARGUMENTS_: PackedStringArray = []) -> String:
 	if not ConsoleDataManager.COMMAND_LIST_.has(command):
 		return "Command '" + command + "' does not exist."
@@ -64,6 +66,7 @@ func parse_command(command: String, ARGUMENTS_: PackedStringArray = []) -> Strin
 	return ""
 
 
+## Gets the reference to the command's target node or returns null if it's not found.
 func get_command_target(command: String) -> Node:
 	var target: String = ConsoleDataManager.COMMAND_LIST_[command]["target"]
 	var type: int = ConsoleDataManager.COMMAND_LIST_[command]["type"]
@@ -81,6 +84,7 @@ func get_command_target(command: String) -> Node:
 	return null
 
 
+## Checks if the command expects any arguments.
 func arguments_optional(
 	METHOD_ARGUMENTS_: Array,
 	ARGUMENTS_: Array[String]
@@ -98,6 +102,9 @@ func arguments_optional(
 	return true
 
 
+## Parses the arguments for the command and converts them to appropriate type.
+## Returns the index of the invalid argument if there are any.[br][br]
+## [i]It only returns the first invalid argument if there are multiple.[/i]
 func parse_argument_list(
 	METHOD_ARGUMENTS_: Array,
 	ARGUMENTS_: PackedStringArray
@@ -129,6 +136,8 @@ func parse_argument_list(
 	return PARSED_ARGUMENTS_
 
 
+## Type matches the argument provided and converts it to the expect type.
+## Returns the index of the argument if it is invalid.
 func parse_argument_type(
 	PARSED_ARGUMENTS_: Dictionary,
 	type: int,
@@ -207,6 +216,7 @@ func parse_argument_type(
 	return -1
 
 
+## Parses vector arguments specifically.
 func parse_vector(
 	argument: String,
 	axisCount: int,
