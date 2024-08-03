@@ -8,6 +8,11 @@ enum CommandType {
 	LOCAL
 }
 
+# Permissions to restrict commands
+enum PermissionLevel {
+	NONE,
+}
+
 # Command list file location constants
 const FILE: String = "command_list.json"
 const DIRECTORY: String = "res://addons/simply-console/data/"
@@ -17,6 +22,8 @@ var COMMAND_LIST_: Dictionary = {
 	"help": {
 		"target": "ConsoleDataManager",
 		"type": CommandType.GLOBAL,
+		"minPermission": PermissionLevel.NONE,
+		"cheats": false,
 		"method": "show_command_list",
 		"argumentList": [
 			{
@@ -29,8 +36,24 @@ var COMMAND_LIST_: Dictionary = {
 	"clear": {
 		"target": "",
 		"type": CommandType.LOCAL,
+		"minPermission": PermissionLevel.NONE,
+		"cheats": false,
 		"method": "clear_console",
 		"argumentList": []
+	},
+	"cheats": {
+		"target": "",
+		"type": CommandType.LOCAL,
+		"minPermission": PermissionLevel.NONE,
+		"cheats": false,
+		"method": "toggle_cheats",
+		"argumentList": [
+			{
+				"name": "enabled",
+				"type": TYPE_BOOL,
+				"optional": true
+			}
+		]
 	},
 }
 

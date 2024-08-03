@@ -4,9 +4,20 @@ class_name CommandParser
 
 
 ## Parses a command and it's arguments, if it has any, and executes them if they are valid.
-func parse_command(command: String, ARGUMENTS_: PackedStringArray = []) -> String:
+func parse_command(
+	command: String,
+	ARGUMENTS_: PackedStringArray,
+	permission: ConsoleDataManager.PermissionLevel,
+	cheatsEnabled: bool
+) -> String:
 	if not ConsoleDataManager.COMMAND_LIST_.has(command):
 		return "Command '" + command + "' does not exist."
+	
+	if not cheatsEnabled and ConsoleDataManager.COMMAND_LIST_[command]["cheats"]:
+		return "Command requires cheats to be enabled."
+	
+	if permission < ConsoleDataManager.COMMAND_LIST_[command]["minPermission"]:
+		return "Permission level too low to use this command."
 	
 	var response
 	var TargetRef: Node = get_command_target(command)

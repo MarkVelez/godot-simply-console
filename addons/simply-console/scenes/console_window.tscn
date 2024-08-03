@@ -7,6 +7,9 @@
 resource_name = "console_window"
 script/source = "extends Window
 
+# Permissions for executing commands.
+@export var permissions: ConsoleDataManager.PermissionLevel = 0
+
 # Console node references.
 @onready var OutputFieldRef: RichTextLabel = %OutputField
 @onready var InputFieldRef: LineEdit = %InputField
@@ -21,8 +24,10 @@ const MAX_CHAR_COUNT: int = 8192
 const MAX_COMMAND_HISTORY: int = 16
 
 # Command history variables
-var COMMAND_HISTORY_: PackedStringArray
+var commandHistory_: PackedStringArray
 var historyPosition: int = 0
+
+var cheatsEnabled: bool = false
 
 
 func _ready() -> void:
@@ -34,31 +39,31 @@ func _ready() -> void:
 	)
 
 
+func on_close_requested() -> void:
+	hide()
+
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		# Move up in command history
 		if (
 			event.pressed
 			and event.keycode == KEY_UP
-			and not COMMAND_HISTORY_.is_empty()
+			and not commandHistory_.is_empty()
 		):
 			if historyPosition != 0:
 				historyPosition -= 1
-			InputFieldRef.set_text(COMMAND_HISTORY_[historyPosition])
+			InputFieldRef.set_text(commandHistory_[historyPosition])
 		
 		# Move down in command history
 		if (
 			event.pressed
 			and event.keycode == KEY_DOWN
-			and not COMMAND_HISTORY_.is_empty()
+			and not commandHistory_.is_empty()
 		):
-			if historyPosition != COMMAND_HISTORY_.size() - 1:
+			if historyPosition != commandHistory_.size() - 1:
 				historyPosition += 1
-			InputFieldRef.set_text(COMMAND_HISTORY_[historyPosition])
-
-
-func on_close_requested() -> void:
-	hide()
+			InputFieldRef.set_text(commandHistory_[historyPosition])
 
 
 func on_output_field_updated() -> void:
@@ -78,13 +83,20 @@ func on_input_field_text_submitted(text: String) -> void:
 	# Escape bbcode tags to avoid possible issues
 	text = escape_bbcode(text)
 	update_command_history(text)
+	
 	# Separate the command name and the arguments
 	var processedText_: PackedStringArray =\\
 		CommandLexerRef.process_input_text(text)
 	var command: String = processedText_[0]
 	processedText_.remove_at(0)
+	
 	var response: String =\\
-		CommandParserRef.parse_command(command, processedText_)
+		CommandParserRef.parse_command(
+			command,
+			processedText_,
+			permissions,
+			cheatsEnabled
+		)
 	
 	if not response.is_empty():
 		output_text(response)
@@ -96,17 +108,18 @@ func escape_bbcode(text: String) -> String:
 
 func update_command_history(text: String) -> void:
 	# Remove duplicate command history entry
-	if COMMAND_HISTORY_.has(text):
-		COMMAND_HISTORY_.remove_at(COMMAND_HISTORY_.find(text))
+	if commandHistory_.has(text):
+		commandHistory_.remove_at(commandHistory_.find(text))
 	
-	COMMAND_HISTORY_.append(text)
-	historyPosition = COMMAND_HISTORY_.size()
+	commandHistory_.append(text)
+	historyPosition = commandHistory_.size()
 	
 	# Cap command history size
-	if COMMAND_HISTORY_.size() > MAX_COMMAND_HISTORY:
-		COMMAND_HISTORY_.remove_at(0)
+	if commandHistory_.size() > MAX_COMMAND_HISTORY:
+		commandHistory_.remove_at(0)
 
 
+#region Print methods
 func output_text(text: String, color := Color.WHITE) -> void:
 	if color != Color.WHITE: 
 		OutputFieldRef.push_color(color)
@@ -126,10 +139,21 @@ func output_error(text: String) -> void:
 
 func output_comment(text: String) -> void:
 	output_text(text, Color.DARK_GRAY)
+#endregion
 
 
+#region Console Commands
 func clear_console() -> void:
 	OutputFieldRef.clear()
+
+
+func toggle_cheats(state: bool = cheatsEnabled) -> String:
+	if state == cheatsEnabled:
+		return \"Cheats are currently \" + (\"enabled.\" if state else \"disabled.\")
+	
+	cheatsEnabled = state
+	return \"Cheats have been \" + (\"enabled.\" if state else \"disabled.\")
+#endregion
 "
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_opm5p"]
