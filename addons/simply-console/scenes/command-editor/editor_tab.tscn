@@ -1,0 +1,539 @@
+[gd_scene load_steps=4 format=3 uid="uid://s3sg33uiq718"]
+
+[sub_resource type="GDScript" id="GDScript_ajqs7"]
+resource_name = "editor"
+script/source = "@tool
+extends TabBar
+
+# Field references
+@onready var CommandListRef: OptionButton = %CommandList
+@onready var CommandNameRef: LineEdit = %CommandName
+@onready var CommandTypeRef: OptionButton = %CommandType
+@onready var PermissionRef: OptionButton = %PermissionLevel
+@onready var CheatsRef: CheckBox = %RequiresCheats
+@onready var TargetNameRef: LineEdit = %TargetName
+@onready var TargetMethodRef: LineEdit = %TargetMethod
+@onready var ArgumentsRef: VBoxContainer = %Arguments
+
+# Command button references
+@onready var UpdateCommandRef: Button = %UpdateCommand
+@onready var RemoveCommandRef: Button = %RemoveCommand
+
+# Warning label references
+@onready var CommandNameWarningRef: Label = %CommandNameWarning
+@onready var TargetMethodWarningRef: Label = %TargetMethodWarning
+
+var updatedCommandList: bool = false
+
+
+func on_command_list_item_selected(index: int) -> void:
+	# New command selected
+	if index == 0:
+		update_fields()
+		ArgumentsRef.update_argument_list()
+		UpdateCommandRef.set_text(\"Add Command\")
+		RemoveCommandRef.hide()
+		return
+	
+	# Existing command selected
+	var commandName: String = CommandListRef.get_item_text(index)
+	var ARGUMENT_LIST_: Array =\\
+		ConsoleDataManager.COMMAND_LIST_[commandName][\"argumentList\"]
+	
+	CommandNameRef.set_text(commandName)
+	update_fields(ConsoleDataManager.COMMAND_LIST_[commandName])
+	ArgumentsRef.update_argument_list(ARGUMENT_LIST_)
+	UpdateCommandRef.set_text(\"Edit Command\")
+	RemoveCommandRef.show()
+
+
+func update_command_list() -> void:
+	CommandListRef.clear()
+	CommandListRef.add_item(\"<new>\")
+	
+	for command in ConsoleDataManager.COMMAND_LIST_.keys():
+		CommandListRef.add_item(command)
+
+
+func update_fields(COMMAND_INFO_: Dictionary = {}) -> void:
+	# Clear input fields
+	if COMMAND_INFO_.is_empty():
+		CommandNameRef.clear()
+		CommandTypeRef.select(0)
+		PermissionRef.select(0)
+		CheatsRef.set_pressed(false)
+		TargetNameRef.clear()
+		TargetMethodRef.clear()
+		return
+	
+	# Populate input fields
+	CommandTypeRef.select(COMMAND_INFO_[\"type\"])
+	PermissionRef.select(
+		COMMAND_INFO_[\"minPermission\"] if COMMAND_INFO_.has(\"minPermission\") else 0
+	)
+	CheatsRef.set_pressed(
+		COMMAND_INFO_[\"cheats\"] if COMMAND_INFO_.has(\"cheats\") else false
+	)
+	TargetNameRef.set_text(COMMAND_INFO_[\"target\"])
+	TargetMethodRef.set_text(COMMAND_INFO_[\"method\"])
+
+
+func on_update_command_pressed() -> void:
+	if not validate_data():
+		return
+	
+	var commandName: String = CommandNameRef.get_text()
+	
+	# Update existing command
+	if ConsoleDataManager.COMMAND_LIST_.has(commandName):
+		var commandInfo_: Dictionary =\\
+			ConsoleDataManager.COMMAND_LIST_[commandName]
+		
+		commandInfo_[\"target\"] = TargetNameRef.get_text()
+		commandInfo_[\"type\"] = CommandTypeRef.get_selected()
+		commandInfo_[\"minPermission\"] = PermissionRef.get_selected()
+		commandInfo_[\"cheats\"] = CheatsRef.is_pressed()
+		commandInfo_[\"method\"] = TargetMethodRef.get_text()
+		commandInfo_[\"argumentList\"] =\\
+			ArgumentsRef.ARGUMENT_LIST_.duplicate(true)
+		
+		CommandListRef.select(0)
+		on_command_list_item_selected(0)
+		return
+	
+	# Add new command
+	var commandListName: String =\\
+		CommandListRef.get_item_text(CommandListRef.selected)
+	ConsoleDataManager.COMMAND_LIST_[commandName] = {}
+	var newCommand_: Dictionary =\\
+		ConsoleDataManager.COMMAND_LIST_[commandName]
+	
+	# Check if the command name was changed on an existing command
+	if ConsoleDataManager.COMMAND_LIST_.has(commandListName):
+		ConsoleDataManager.COMMAND_LIST_.erase(commandListName)
+		CommandListRef.remove_item(CommandListRef.selected)
+	
+	CommandListRef.add_item(commandName)
+	newCommand_[\"target\"] = TargetNameRef.get_text()
+	newCommand_[\"type\"] = CommandTypeRef.get_selected()
+	newCommand_[\"minPermission\"] = PermissionRef.get_selected()
+	newCommand_[\"cheats\"] = CheatsRef.is_pressed()
+	newCommand_[\"method\"] = TargetMethodRef.get_text()
+	newCommand_[\"argumentList\"] = ArgumentsRef.ARGUMENT_LIST_.duplicate(true)
+	
+	# Clear input fields
+	CommandListRef.select(0)
+	on_command_list_item_selected(0)
+	updatedCommandList = true
+
+
+func validate_data() -> bool:
+	var commandName: String = CommandNameRef.get_text()
+	var commandListName: String =\\
+		CommandListRef.get_item_text(CommandListRef.selected)
+	var isValid: bool = true
+	
+	# Check if command name already exist
+	if (
+		ConsoleDataManager.COMMAND_LIST_.has(commandName)
+		and commandName != commandListName
+	):
+		CommandNameWarningRef.set_text(\"Command already exists.\")
+		CommandNameWarningRef.show()
+		isValid = false
+	
+	# Check if command name is empty
+	if commandName.is_empty():
+		CommandNameWarningRef.set_text(\"Command must have a name.\")
+		CommandNameWarningRef.show()
+		isValid = false
+	
+	if isValid:
+		CommandNameWarningRef.hide()
+	
+	# Check if target method is empty
+	if TargetMethodRef.text.is_empty():
+		TargetMethodWarningRef.show()
+		isValid = false
+	else:
+		TargetMethodWarningRef.hide()
+	
+	return isValid
+
+
+func on_remove_command_pressed() -> void:
+	ConsoleDataManager.COMMAND_LIST_.erase(
+		CommandListRef.get_item_text(CommandListRef.selected)
+	)
+	
+	updatedCommandList = true
+	CommandListRef.remove_item(CommandListRef.selected)
+	CommandListRef.select(0)
+	on_command_list_item_selected(0)
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6mtvx"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.187176, 0.187176, 0.187176, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="GDScript" id="GDScript_ciwlr"]
+resource_name = "arguments"
+script/source = "@tool
+extends VBoxContainer
+
+@onready var ArgumentListRef: VBoxContainer = %ArgumentList
+
+const ArgumentScene: PackedScene =\\
+	preload(\"res://addons/simply-console/scenes/command-editor/argument.tscn\")
+
+var ARGUMENT_LIST_: Array[Dictionary]
+var argumentCount: int = 0
+
+
+func on_add_argument_pressed() -> void:
+	if argumentCount >= 1:
+		ArgumentListRef.get_child(argumentCount - 1).DownButtonRef.show()
+	
+	argumentCount += 1
+	create_argument()
+
+
+func remove_argument(ArgumentRef: Control) -> void:
+	argumentCount -= 1
+	ARGUMENT_LIST_.remove_at(ArgumentRef.get_index())
+	ArgumentRef.queue_free()
+	
+	# Wait for the argument to be deleted
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	# Hide both buttons if there is only one argument
+	if argumentCount == 1:
+		ArgumentRef = ArgumentListRef.get_child(0)
+		ArgumentRef.UpButtonRef.hide()
+		ArgumentRef.DownButtonRef.hide()
+		return
+	
+	# Update the remaining argument's buttons
+	for i in argumentCount:
+		update_move_buttons_visibility(i)
+
+
+func update_argument_list(ARGUMENTS_: Array = []) -> void:
+	argumentCount = ARGUMENTS_.size()
+	if ArgumentListRef.get_child_count() > 0:
+		for child in ArgumentListRef.get_children():
+			child.queue_free()
+		
+		ARGUMENT_LIST_.clear()
+		
+	if ARGUMENTS_.is_empty():
+		return
+	
+	# Wait for the argument to be deleted
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	for ARGUMENT_ in ARGUMENTS_:
+		var ArgumentRef: Control = create_argument()
+		ArgumentRef.init_argument_info(ARGUMENT_)
+
+
+func create_argument() -> Control:
+	var ArgumentRef: Control = ArgumentScene.instantiate()
+	ArgumentRef.UpButtonRef.connect(
+		\"pressed\",
+		move_argument_up.bind(ArgumentRef)
+	)
+	ArgumentRef.DownButtonRef.connect(
+		\"pressed\",
+		move_argument_down.bind(ArgumentRef)
+	)
+	ArgumentRef.RemoveButtonRef.connect(
+		\"pressed\",
+		remove_argument.bind(ArgumentRef)
+	)
+	ArgumentListRef.add_child(ArgumentRef)
+	ARGUMENT_LIST_.append(ArgumentRef.CURRENT_ARGUMENT_INFO_)
+	
+	if ArgumentRef.get_index() == 0:
+		ArgumentRef.UpButtonRef.hide()
+	
+	if ArgumentRef.get_index() == argumentCount - 1:
+		ArgumentRef.DownButtonRef.hide()
+	
+	return ArgumentRef
+
+
+func move_argument_up(ArgumentRef: Control) -> void:
+	var argumentIndex: int = ArgumentRef.get_index()
+	var ARGUMENT_INFO_: Dictionary = ARGUMENT_LIST_.pop_at(argumentIndex)
+	
+	# Shift argument up
+	ARGUMENT_LIST_.insert(argumentIndex - 1, ARGUMENT_INFO_)
+	ArgumentListRef.move_child(ArgumentRef, argumentIndex - 1)
+	
+	# Update visibility for moved argument and its neighbors
+	update_move_buttons_visibility(argumentIndex - 1)
+	update_move_buttons_visibility(argumentIndex)
+
+
+func move_argument_down(ArgumentRef: Control) -> void:
+	var argumentIndex: int = ArgumentRef.get_index()
+	var ARGUMENT_INFO_: Dictionary = ARGUMENT_LIST_.pop_at(argumentIndex)
+	
+	# Shift argument down
+	ARGUMENT_LIST_.insert(argumentIndex + 1, ARGUMENT_INFO_)
+	ArgumentListRef.move_child(ArgumentRef, argumentIndex + 1)
+	
+	# Update visibility for moved argument and its neighbors
+	update_move_buttons_visibility(argumentIndex)
+	update_move_buttons_visibility(argumentIndex + 1)
+
+
+func update_move_buttons_visibility(index: int) -> void:
+	var argumentCount: int = ArgumentListRef.get_child_count()
+	var ArgumentRef: Control = ArgumentListRef.get_child(index)
+	
+	# Update up button
+	if index == 0:
+		ArgumentRef.UpButtonRef.hide()
+	else:
+		ArgumentRef.UpButtonRef.show()
+	
+	# Update down button
+	if index == argumentCount - 1:
+		ArgumentRef.DownButtonRef.hide()
+	else:
+		ArgumentRef.DownButtonRef.show()
+"
+
+[node name="Editor" type="TabBar"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_ajqs7")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CommandInfo" type="PanelContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+focus_mode = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_6mtvx")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo"]
+layout_mode = 2
+
+[node name="List" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "List of all the existing commands.
+Selecting an existing command will allow you
+to edit it.
+Selecting <new> will let you create a new command."
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/List"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command List"
+
+[node name="CommandList" type="OptionButton" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/List"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The name that will be used to call the command inside of the console."
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Name"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command Name"
+
+[node name="CommandName" type="LineEdit" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Name"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="Type" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The scope of the command.
+A GLOBAL command can call a method from an autoload.
+A LOCAL command can only call a method from a node in the current scene tree.
+
+LOCAL commands can be significantly slower compared to GLOBAL commands 
+as they do not have a direct reference to the target node. 
+Therefore if you have to use a LOCAL command, 
+try to put the target node as close to the root as possible and avoid nesting."
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Type"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command Type"
+
+[node name="CommandType" type="OptionButton" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Type"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 2
+selected = 0
+popup/item_0/text = "GLOBAL"
+popup/item_0/id = 0
+popup/item_1/text = "LOCAL"
+popup/item_1/id = 1
+
+[node name="Permission" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The required permission level needed to be able to use the command."
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Permission"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Minimum Permission"
+
+[node name="PermissionLevel" type="OptionButton" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Permission"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 1
+selected = 0
+popup/item_0/text = "NONE"
+popup/item_0/id = 0
+
+[node name="Cheats" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Toggle whether the command requires cheats
+to be enabed to be used."
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Cheats"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Requires Cheats"
+
+[node name="RequiresCheats" type="CheckBox" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Cheats"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "On"
+
+[node name="Target" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The name of the target node that has the method that the command will call.
+Leave empty to use the console directly."
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Target"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Target Name"
+
+[node name="TargetName" type="LineEdit" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Target"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="Method" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The method that the command will call."
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Method"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Target Method"
+
+[node name="TargetMethod" type="LineEdit" parent="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/Method"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="CommandArguments" type="PanelContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+focus_mode = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_6mtvx")
+
+[node name="Arguments" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/CommandArguments"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Arguments for the command.
+Arguments can be optional, when doing so
+do not forget to assign a default value
+to the corresponding argument of the 
+method being called.
+Arguments are added sequentially so the
+argument name is more of a descriptor."
+theme_override_constants/separation = 8
+script = SubResource("GDScript_ciwlr")
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/CommandArguments/Arguments"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command Arguments"
+
+[node name="ArgumentList" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/CommandArguments/Arguments"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AddArgument" type="Button" parent="ScrollContainer/VBoxContainer/CommandArguments/Arguments"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Add Argument"
+
+[node name="CommandNameWarning" type="Label" parent="ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "Command already exists."
+
+[node name="TargetMethodWarning" type="Label" parent="ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "Command must have a target method."
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="UpdateCommand" type="Button" parent="ScrollContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add Command"
+
+[node name="RemoveCommand" type="Button" parent="ScrollContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove Command"
+
+[connection signal="item_selected" from="ScrollContainer/VBoxContainer/CommandInfo/VBoxContainer/List/CommandList" to="." method="on_command_list_item_selected"]
+[connection signal="pressed" from="ScrollContainer/VBoxContainer/CommandArguments/Arguments/AddArgument" to="ScrollContainer/VBoxContainer/CommandArguments/Arguments" method="on_add_argument_pressed"]
+[connection signal="pressed" from="ScrollContainer/VBoxContainer/HBoxContainer/UpdateCommand" to="." method="on_update_command_pressed"]
+[connection signal="pressed" from="ScrollContainer/VBoxContainer/HBoxContainer/RemoveCommand" to="." method="on_remove_command_pressed"]

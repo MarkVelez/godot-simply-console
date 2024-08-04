@@ -1,0 +1,220 @@
+[gd_scene load_steps=4 format=3 uid="uid://cobxnfwqn6bdh"]
+
+[sub_resource type="GDScript" id="GDScript_f08oq"]
+resource_name = "batch_edit"
+script/source = "@tool
+extends TabBar
+
+@onready var CommandListRef: ItemList = %CommandList
+@onready var CommandTypeRef: OptionButton = %CommandType
+@onready var PermissionRef: OptionButton = %PermissionLevel
+@onready var CheatsRef: CheckBox = %RequiresCheats
+@onready var TargetNameRef: LineEdit = %TargetName
+
+var updatedCommandList: bool = false
+
+
+func update_command_list() -> void:
+	CommandListRef.clear()
+	
+	for command in ConsoleDataManager.COMMAND_LIST_.keys():
+		CommandListRef.add_item(command)
+
+
+func on_edit_commands_pressed() -> void:
+	var type: int = CommandTypeRef.get_selected()
+	var permission: int = PermissionRef.get_selected()
+	var cheats: bool = CheatsRef.is_pressed()
+	var target: String = TargetNameRef.get_text()
+	
+	for i in CommandListRef.get_selected_items():
+		var commandInfo_: Dictionary =\\
+			ConsoleDataManager.COMMAND_LIST_[CommandListRef.get_item_text(i)]
+		
+		commandInfo_[\"target\"] = target
+		commandInfo_[\"type\"] = type
+		commandInfo_[\"minPermission\"] = permission
+		commandInfo_[\"cheats\"] = cheats
+	
+	reset_tab()
+
+
+func reset_tab() -> void:
+	CommandListRef.deselect_all()
+	CommandTypeRef.select(0)
+	PermissionRef.select(0)
+	CheatsRef.set_pressed(false)
+	TargetNameRef.clear()
+
+
+func on_remove_commands_pressed() -> void:
+	for i in CommandListRef.get_selected_items():
+		ConsoleDataManager.COMMAND_LIST_.erase(CommandListRef.get_item_text(i))
+	
+	update_command_list()
+	updatedCommandList = true
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rlw61"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.187176, 0.187176, 0.187176, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ba6ah"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.187176, 0.187176, 0.187176, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[node name="Batch Edit" type="TabBar"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_f08oq")
+
+[node name="VBoxContainer" type="HSplitContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CommandList" type="ItemList" parent="VBoxContainer/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/v_separation = 6
+theme_override_styles/panel = SubResource("StyleBoxFlat_rlw61")
+select_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CommandInfo" type="PanelContainer" parent="VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_ba6ah")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Type" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The scope of the command.
+A GLOBAL command can call a method from an autoload.
+A LOCAL command can only call a method from a node in the current scene tree.
+
+LOCAL commands can be significantly slower compared to GLOBAL commands 
+as they do not have a direct reference to the target node. 
+Therefore if you have to use a LOCAL command, 
+try to put the target node as close to the root as possible and avoid nesting."
+
+[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Type"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Command Type"
+
+[node name="CommandType" type="OptionButton" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Type"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 2
+selected = 0
+popup/item_0/text = "GLOBAL"
+popup/item_0/id = 0
+popup/item_1/text = "LOCAL"
+popup/item_1/id = 1
+
+[node name="Permission" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The required permission level needed to be able to use the command."
+
+[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Permission"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Minimum Permission"
+
+[node name="PermissionLevel" type="OptionButton" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Permission"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 1
+selected = 0
+popup/item_0/text = "NONE"
+popup/item_0/id = 0
+
+[node name="Cheats" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Toggle whether the command requires cheats
+to be enabed to be used."
+
+[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Cheats"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Requires Cheats"
+
+[node name="RequiresCheats" type="CheckBox" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Cheats"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "On"
+
+[node name="Target" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "The name of the target node that has the method that the command will call.
+Leave empty to use the console directly."
+
+[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Target"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Target Name"
+
+[node name="TargetName" type="LineEdit" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Target"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EditCommands" type="Button" parent="VBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Edit Commands"
+
+[node name="RemoveCommands" type="Button" parent="VBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove Commands"
+
+[connection signal="pressed" from="VBoxContainer/VBoxContainer/HBoxContainer/EditCommands" to="." method="on_edit_commands_pressed"]
+[connection signal="pressed" from="VBoxContainer/VBoxContainer/HBoxContainer/RemoveCommands" to="." method="on_remove_commands_pressed"]
