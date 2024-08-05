@@ -20,8 +20,8 @@ const PATH: String = DIRECTORY + FILE
 
 var COMMAND_LIST_: Dictionary = {
 	"help": {
-		"target": "ConsoleDataManager",
-		"type": CommandType.GLOBAL,
+		"target": "",
+		"type": CommandType.LOCAL,
 		"minPermission": PermissionLevel.NONE,
 		"cheats": false,
 		"method": "show_command_list",
@@ -89,30 +89,3 @@ func get_data() -> void:
 	if COMMAND_LIST_ == null:
 		push_error("Failed to parse command list file.")
 		return
-
-
-func show_command_list(commandName: String = "") -> String:
-	var response: String = "List of available commands:\n"
-	
-	# Show list of commands
-	if commandName == "":
-		for command in COMMAND_LIST_:
-			response += command + ", "
-		
-		return response.trim_suffix(", ")
-	
-	# Show list of arguments for command
-	if COMMAND_LIST_.has(commandName):
-		if COMMAND_LIST_[commandName]["argumentList"].is_empty():
-			return "Command '" + commandName + "' does not have any arguments."
-		
-		response = "Argument(s) for '" + commandName + "':\n"
-		for ARGUMENT_ in COMMAND_LIST_[commandName]["argumentList"]:
-			response += ARGUMENT_["name"]
-			if ARGUMENT_["optional"]:
-				response += " (optional)"
-			response += "\n"
-		
-		return response.trim_suffix("\n")
-	
-	return "Command '" + commandName + "' does not exist."
