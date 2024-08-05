@@ -14,6 +14,14 @@ extends TabBar
 var updatedCommandList: bool = false
 
 
+func init_batch_edit() -> void:
+	update_command_list()
+	
+	# Add permission levels to option button
+	for permission in ConsoleDataManager.PermissionLevel:
+		PermissionRef.add_item(permission)
+
+
 func update_command_list() -> void:
 	CommandListRef.clear()
 	
@@ -166,10 +174,7 @@ text = "Minimum Permission"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-item_count = 1
 selected = 0
-popup/item_0/text = "NONE"
-popup/item_0/id = 0
 
 [node name="Cheats" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
 layout_mode = 2
