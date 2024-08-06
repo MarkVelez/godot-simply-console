@@ -5,11 +5,12 @@ resource_name = "batch_edit"
 script/source = "@tool
 extends TabBar
 
-@onready var CommandListRef: ItemList = %CommandList
+@onready var CommandListRef: ItemList = %List
 @onready var CommandTypeRef: OptionButton = %CommandType
 @onready var PermissionRef: OptionButton = %PermissionLevel
 @onready var CheatsRef: CheckBox = %RequiresCheats
 @onready var TargetNameRef: LineEdit = %TargetName
+@onready var SelectButtonRef: Button = %SelectAll
 
 var updatedCommandList: bool = false
 
@@ -61,6 +62,29 @@ func on_remove_commands_pressed() -> void:
 	
 	update_command_list()
 	updatedCommandList = true
+
+
+func on_select_all_pressed() -> void:
+	var itemCount: int = CommandListRef.get_item_count()
+	
+	# Deselect all if all items are selected
+	if CommandListRef.get_selected_items().size() == itemCount:
+		CommandListRef.deselect_all()
+		SelectButtonRef.set_text(\"Select All\")
+		return
+	
+	# Select all items
+	for i in range(itemCount):
+		CommandListRef.select(i, false)
+	
+	SelectButtonRef.set_text(\"Deselect All\")
+
+
+func on_list_item_selected(_index, _selected) -> void:
+	if CommandListRef.get_selected_items().size() > 0:
+		SelectButtonRef.set_text(\"Deselect All\")
+	else:
+		SelectButtonRef.set_text(\"Select All\")
 "
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rlw61"]
@@ -105,12 +129,15 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+[node name="CommandList" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/CommandList"]
 custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CommandList" type="ItemList" parent="VBoxContainer/ScrollContainer"]
+[node name="List" type="ItemList" parent="VBoxContainer/CommandList/ScrollContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -119,22 +146,27 @@ theme_override_constants/v_separation = 6
 theme_override_styles/panel = SubResource("StyleBoxFlat_rlw61")
 select_mode = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="SelectAll" type="Button" parent="VBoxContainer/CommandList"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Select All"
+
+[node name="CommandInfo" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="CommandInfo" type="PanelContainer" parent="VBoxContainer/VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/CommandInfo"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_ba6ah")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="Type" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+[node name="Type" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "The scope of the command.
 A GLOBAL command can call a method from an autoload.
@@ -145,12 +177,12 @@ as they do not have a direct reference to the target node.
 Therefore if you have to use a LOCAL command, 
 try to put the target node as close to the root as possible and avoid nesting."
 
-[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Type"]
+[node name="Label" type="Label" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Type"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Command Type"
 
-[node name="CommandType" type="OptionButton" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Type"]
+[node name="CommandType" type="OptionButton" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Type"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -161,65 +193,66 @@ popup/item_0/id = 0
 popup/item_1/text = "LOCAL"
 popup/item_1/id = 1
 
-[node name="Permission" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+[node name="Permission" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "The required permission level needed to be able to use the command."
 
-[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Permission"]
+[node name="Label" type="Label" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Permission"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Minimum Permission"
 
-[node name="PermissionLevel" type="OptionButton" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Permission"]
+[node name="PermissionLevel" type="OptionButton" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Permission"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-selected = 0
 
-[node name="Cheats" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+[node name="Cheats" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "Toggle whether the command requires cheats
 to be enabed to be used."
 
-[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Cheats"]
+[node name="Label" type="Label" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Cheats"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Requires Cheats"
 
-[node name="RequiresCheats" type="CheckBox" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Cheats"]
+[node name="RequiresCheats" type="CheckBox" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Cheats"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "On"
 
-[node name="Target" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer"]
+[node name="Target" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "The name of the target node that has the method that the command will call.
 Leave empty to use the console directly."
 
-[node name="Label" type="Label" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Target"]
+[node name="Label" type="Label" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Target"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Target Name"
 
-[node name="TargetName" type="LineEdit" parent="VBoxContainer/VBoxContainer/CommandInfo/VBoxContainer/Target"]
+[node name="TargetName" type="LineEdit" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Target"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 caret_blink = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/CommandInfo"]
 layout_mode = 2
 
-[node name="EditCommands" type="Button" parent="VBoxContainer/VBoxContainer/HBoxContainer"]
+[node name="EditCommands" type="Button" parent="VBoxContainer/CommandInfo/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Edit Commands"
 
-[node name="RemoveCommands" type="Button" parent="VBoxContainer/VBoxContainer/HBoxContainer"]
+[node name="RemoveCommands" type="Button" parent="VBoxContainer/CommandInfo/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Remove Commands"
 
-[connection signal="pressed" from="VBoxContainer/VBoxContainer/HBoxContainer/EditCommands" to="." method="on_edit_commands_pressed"]
-[connection signal="pressed" from="VBoxContainer/VBoxContainer/HBoxContainer/RemoveCommands" to="." method="on_remove_commands_pressed"]
+[connection signal="multi_selected" from="VBoxContainer/CommandList/ScrollContainer/List" to="." method="on_list_item_selected"]
+[connection signal="pressed" from="VBoxContainer/CommandList/SelectAll" to="." method="on_select_all_pressed"]
+[connection signal="pressed" from="VBoxContainer/CommandInfo/HBoxContainer/EditCommands" to="." method="on_edit_commands_pressed"]
+[connection signal="pressed" from="VBoxContainer/CommandInfo/HBoxContainer/RemoveCommands" to="." method="on_remove_commands_pressed"]
