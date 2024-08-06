@@ -14,20 +14,31 @@ When opening the command editor, you are greeted with multiple input fields used
   - **GLOBAL** is used for autoload targets.
   - **LOCAL** is used for targets inside of the game scene. LOCAL commands look through the whole game scene until they find their target, therefore they can be significantly slower compared to GLOBAL commands as they have a direct reference to their target. To minimize the performance hit, try to move the command target to as close to the scene root as possible and avoid nesting. Alternatively an intermediate node can be used as the target which will propagate the call to the appropriate node.
 
+- `Minimum Permission` let's you set a minimum permission requirement to use the command allowing the restriction of commands. Permission levels are hierarchical so a higher level permission will have the access to commands from the permission levels below it. If you want to add or change a permission level, you can do so by going to `singletons/console_data_manager.gd` and changing the `PermissionLevel` enum. *The player's permission level is stored in the console window and can be changed as needed.*
+
+- `Requires Cheats` let's you decide if the command requires cheats to be enabled to use.
+
 - `Target Name` is the name of the target node. The name has to be an exact match otherwise the command will not work. Optionally this field can be left empty which will directly reference the console window.
 
-- `Target Method` is the method i.e. function which will be called from the target node. This as well has to be an exact match otherwise the command will not work.
+- `Target Method` is the method, i.e., function which will be called from the target node. This as well has to be an exact match otherwise the command will not work.
 
 - `Command Arguments` is the list of arguments for the command. These correspond to the arguments of the target method. Arguments are also stored sequentually so the order has to be the same as the order in the target method. Each argument also has three fields:
   - **Argument Name** is purely visual and does not have to match what is in the target method. It can also be left empty, however I advise againts doing so as it can be used as a short descriptor of what the argument is used for.
   - **Argument Type** is the type of value the argument expects. Currently the support types are: String, Int, Float, Bool and Vector2/3 as well as their Int only counterparts. Vectors are constructed with parenthesis and the values are separated via a comma. Whitespace is not ignored inside of a Vector so **(1, 2)** would be counted as two separate arguments.
   - **Optional** is a toggle to make the argument optional. When making an argument optional you also have to assign a default value to the corresponding argument inside of the target method.
 
-
 ## Adding/Editing commands
 
 To create a new command, you first have to have the `<new>` optional selected from the `Command List`. Afterwhich you can fill out the rest of the fields as explained before. Once you are done, you can pressed the `Add Command` button at the bottom.
 
 To edit an existing command, you can select the command you wish to edit from the `Command List`. Once doing so, the rest of the fields will be filled with the information corresponding to the selected command. After you have tweaked the command you can finalize the edit by pressing the `Edit Command` button, alternatively if you wish to completely delete the command you can press the `Remove Command` button.
+
+To save all the changes made to the command list, press the `Save` button at the bottom of the command editor window. This will save the command list to a json file, which can be found under `addons/simply-console/data`.
+
+## Using batch edit
+
+The batch edit tab in the command editor lets you edit or remove multiple commands at once. It has less options to edit compared to editing individual commands, otherwise it works functionally the same as the normal editor.
+
+On the left side of the editor is the list of all the commands. To select multiple commands you can hold `Ctrl` or `Shift`. Once you have the commands you wish to edit or remove selected, you can change the options you wish on the right side of the editor and then press the `Edit Commands` button. If you want to remove the selected commands, you can press the `Remove Commands` button.
 
 To save all the changes made to the command list, press the `Save` button at the bottom of the command editor window. This will save the command list to a json file, which can be found under `addons/simply-console/data`.

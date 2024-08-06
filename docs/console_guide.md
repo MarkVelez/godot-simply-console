@@ -13,7 +13,16 @@ Lastly, you will want to add a way to show the console like pressing the ` key, 
 
 ## Using the console
 
-The structure for commands is `<command>` `<arguments>`. The command and arguments are separated by a single space. If you want to add custom commands, refer to the [Command Editor](command_editor_guide.md) guide
+The structure for commands is `<command>` `<arguments>`. The command and arguments are separated by a single space. String arguments can be written as one word or inside of quotes which will let you use spaces in the text. Vector arguments are written the same as in code, i.e., (x, y), and spaces will be ignored inside of the parentheses.
+
+The console comes with three build in commands:
+- `help` shows all **accessible** commands. Optionally a command can be added as an argument which will show the arguments for the command. *Accessible means that the player has an adequate permission level and or has cheats enabled if it is required.*
+
+- `clear` clears the console window.
+
+- `cheats` lets you toggle cheats by passing **true** or **false** as an argument. Optionally it can be used without an argument to show if cheats are enabled or not. *By default this command has no access restriction.*
+
+If you want to add custom commands, refer to the [Command Editor](command_editor_guide.md) guide.
 
 To print to the console you can use the following functions:
 - `output_text()`
@@ -21,4 +30,4 @@ To print to the console you can use the following functions:
 - `output_warning()`
 - `output_comment()`
 
-For `output_text()`, you can optionally pass a custom color as well. As for the rest they function the same, but they have predefined colors, i.e. **red for error**, **yellow for warning** and **grey for comment**.
+For `output_text()`, you can optionally pass a custom color as well. As for the rest they function the same, but they have predefined colors, i.e., **red for error**, **yellow for warning** and **grey for comment**.

@@ -10,7 +10,6 @@ The console can also be directly printed to to display errors, warnings or gener
 
 ## Planned features
 
-- Command scene restriction
 - Command hints and suggestion
 - In-Game object picker to get references
 
@@ -18,3 +17,15 @@ The console can also be directly printed to to display errors, warnings or gener
 
 - [Console](docs/console_guide.md)
 - [Command Editor](docs/command_editor_guide.md)
+
+## Notice
+
+If you are upgrading from `v1.0.0` to `v1.1.0`, make sure to update your command list file as there are two new attributes for commands.
+
+To update your command list:
+- Go to the `Batch Edit` tab in the command editor.
+- Press the `Select All` button.
+- Press the `Edit Commands` button.
+- Press the `Save` button.
+
+If you also want the new built in command, go to the `Extras` tab and press the `Restore Built-In Commands` button. *This will restore ***all*** built in commands.*

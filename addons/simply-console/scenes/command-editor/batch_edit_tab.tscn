@@ -57,6 +57,7 @@ func reset_tab() -> void:
 	PermissionRef.select(0)
 	CheatsRef.set_pressed(false)
 	TargetNameRef.clear()
+	SelectButtonRef.set_text(\"Select All\")
 
 
 func on_remove_commands_pressed() -> void:
