@@ -18,44 +18,7 @@ const FILE: String = "command_list.json"
 const DIRECTORY: String = "res://addons/simply-console/data/"
 const PATH: String = DIRECTORY + FILE
 
-var COMMAND_LIST_: Dictionary = {
-	"help": {
-		"target": "",
-		"type": CommandType.LOCAL,
-		"minPermission": PermissionLevel.NONE,
-		"cheats": false,
-		"method": "show_command_list",
-		"argumentList": [
-			{
-				"name": "command",
-				"type": TYPE_STRING,
-				"optional": true
-			}
-		]
-	},
-	"clear": {
-		"target": "",
-		"type": CommandType.LOCAL,
-		"minPermission": PermissionLevel.NONE,
-		"cheats": false,
-		"method": "clear_console",
-		"argumentList": []
-	},
-	"cheats": {
-		"target": "",
-		"type": CommandType.LOCAL,
-		"minPermission": PermissionLevel.NONE,
-		"cheats": false,
-		"method": "toggle_cheats",
-		"argumentList": [
-			{
-				"name": "enabled",
-				"type": TYPE_BOOL,
-				"optional": true
-			}
-		]
-	},
-}
+var COMMAND_LIST_: Dictionary
 
 
 func _ready() -> void:
@@ -68,8 +31,50 @@ func _ready() -> void:
 		if not Engine.is_editor_hint():
 			call_deferred("get_data")
 	else:
+		COMMAND_LIST_ = get_built_in_commands()
 		save_data()
 		push_warning("No command list file found.")
+
+
+func get_built_in_commands() -> Dictionary:
+	return {
+		"help": {
+			"target": "",
+			"type": CommandType.LOCAL,
+			"minPermission": PermissionLevel.NONE,
+			"cheats": false,
+			"method": "show_command_list",
+			"argumentList": [
+				{
+					"name": "command",
+					"type": TYPE_STRING,
+					"optional": true
+				}
+			]
+		},
+		"clear": {
+			"target": "",
+			"type": CommandType.LOCAL,
+			"minPermission": PermissionLevel.NONE,
+			"cheats": false,
+			"method": "clear_console",
+			"argumentList": []
+		},
+		"cheats": {
+			"target": "",
+			"type": CommandType.LOCAL,
+			"minPermission": PermissionLevel.NONE,
+			"cheats": false,
+			"method": "toggle_cheats",
+			"argumentList": [
+				{
+					"name": "enabled",
+					"type": TYPE_BOOL,
+					"optional": true
+				}
+			]
+		},
+	}
 
 
 func save_data() -> void:

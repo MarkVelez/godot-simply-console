@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3 uid="uid://dyvdqe2orc8v1"]
+
+[sub_resource type="GDScript" id="GDScript_pmxp4"]
+resource_name = "extras"
+script/source = "@tool
+extends TabBar
+
+
+func on_restore_pressed() -> void:
+	var BUILT_IN_COMMANDS_: Dictionary =\\
+		ConsoleDataManager.get_built_in_commands()
+	var COMMAND_LIST_: Dictionary = ConsoleDataManager.COMMAND_LIST_
+	
+	for command in BUILT_IN_COMMANDS_:
+		if not COMMAND_LIST_.has(command):
+			COMMAND_LIST_[command] = BUILT_IN_COMMANDS_[command]
+
+
+func on_reset_pressed() -> void:
+	ConsoleDataManager.COMMAND_LIST_.clear()
+	ConsoleDataManager.COMMAND_LIST_ =\\
+		ConsoleDataManager.get_built_in_commands()
+"
+
+[node name="Extras" type="TabBar"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_pmxp4")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="Restore" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Restore Built-In Commands"
+
+[node name="Reset" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Reset Command List"
+
+[connection signal="pressed" from="PanelContainer/VBoxContainer/Restore" to="." method="on_restore_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/Reset" to="." method="on_reset_pressed"]
