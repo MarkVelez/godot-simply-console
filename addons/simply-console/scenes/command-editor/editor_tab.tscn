@@ -5,6 +5,8 @@ resource_name = "editor"
 script/source = "@tool
 extends TabBar
 
+signal changes_made
+
 # Field references
 @onready var CommandListRef: OptionButton = %CommandList
 @onready var CommandNameRef: LineEdit = %CommandName
@@ -133,6 +135,7 @@ func on_update_command_pressed() -> void:
 	CommandListRef.select(0)
 	on_command_list_item_selected(0)
 	updatedCommandList = true
+	emit_signal(\"changes_made\")
 
 
 func validate_data() -> bool:
@@ -178,6 +181,7 @@ func on_remove_command_pressed() -> void:
 	CommandListRef.remove_item(CommandListRef.selected)
 	CommandListRef.select(0)
 	on_command_list_item_selected(0)
+	emit_signal(\"changes_made\")
 "
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6mtvx"]

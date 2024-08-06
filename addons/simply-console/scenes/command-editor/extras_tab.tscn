@@ -1,10 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://dyvdqe2orc8v1"]
+[gd_scene load_steps=3 format=3 uid="uid://dyvdqe2orc8v1"]
 
 [sub_resource type="GDScript" id="GDScript_pmxp4"]
 resource_name = "extras"
 script/source = "@tool
 extends TabBar
 
+signal changes_made
 
 func on_restore_pressed() -> void:
 	var BUILT_IN_COMMANDS_: Dictionary =\\
@@ -14,13 +15,28 @@ func on_restore_pressed() -> void:
 	for command in BUILT_IN_COMMANDS_:
 		if not COMMAND_LIST_.has(command):
 			COMMAND_LIST_[command] = BUILT_IN_COMMANDS_[command]
+	
+	emit_signal(\"changes_made\")
 
 
 func on_reset_pressed() -> void:
 	ConsoleDataManager.COMMAND_LIST_.clear()
 	ConsoleDataManager.COMMAND_LIST_ =\\
 		ConsoleDataManager.get_built_in_commands()
+	emit_signal(\"changes_made\")
 "
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7vkcq"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.187176, 0.187176, 0.187176, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
 
 [node name="Extras" type="TabBar"]
 anchors_preset = 15
@@ -37,6 +53,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7vkcq")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
 layout_mode = 2

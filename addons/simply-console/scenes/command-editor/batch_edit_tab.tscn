@@ -5,6 +5,8 @@ resource_name = "batch_edit"
 script/source = "@tool
 extends TabBar
 
+signal changes_made
+
 @onready var CommandListRef: ItemList = %List
 @onready var CommandTypeRef: OptionButton = %CommandType
 @onready var PermissionRef: OptionButton = %PermissionLevel
@@ -46,6 +48,7 @@ func on_edit_commands_pressed() -> void:
 		commandInfo_[\"cheats\"] = cheats
 	
 	reset_tab()
+	emit_signal(\"changes_made\")
 
 
 func reset_tab() -> void:
@@ -62,6 +65,7 @@ func on_remove_commands_pressed() -> void:
 	
 	update_command_list()
 	updatedCommandList = true
+	emit_signal(\"changes_made\")
 
 
 func on_select_all_pressed() -> void:
