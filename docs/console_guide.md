@@ -11,6 +11,10 @@ The console has built in limits for responses, character count and command histo
 
 Lastly, you will want to add a way to show the console like pressing the ` key, which is standard in most games with a console.
 
+### For Godot 4.2 users
+
+The method used to limit the amount of responses has been changed in Godot 4.3 as it had a bug that I have worked around previously, but this bug now is fixed. If you are using v1.1.1 on Godot 4.2, `disable BBCode` on the `OutputField` of the `Console Window` otherwise the first response will never get removed. Additionally, you may want to increase the max reponse limit by one as the number of displayed responses will be one less than what is defined.
+
 ## Using the console
 
 The structure for commands is `<command>` `<arguments>`. The command and arguments are separated by a single space. String arguments can be written as one word or inside of quotes which will let you use spaces in the text. Vector arguments are written the same as in code, i.e., (x, y), and spaces will be ignored inside of the parentheses.

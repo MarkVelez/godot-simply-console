@@ -68,10 +68,14 @@ func _input(event: InputEvent) -> void:
 func on_output_field_updated() -> void:
 	# Cap the amount of responses to not bloat memory
 	if (
-		OutputFieldRef.get_paragraph_count() - 1 > MAX_RESPONSES
+		OutputFieldRef.get_paragraph_count() > MAX_RESPONSES
 		or OutputFieldRef.get_total_character_count() > MAX_CHAR_COUNT
 	):
-		OutputFieldRef.call_deferred(\"remove_paragraph\", 1)
+		# Compatibility for 4.2
+		if Engine.get_version_info().hex >= 0x040300:
+			OutputFieldRef.call(\"remove_paragraph\", 0, true)
+		else:
+			OutputFieldRef.call_deferred(\"remove_paragraph\", 1)
 
 
 func on_input_field_text_submitted(text: String) -> void:
@@ -120,10 +124,11 @@ func update_command_history(text: String) -> void:
 
 #region Print methods
 func output_text(text: String, color := Color.WHITE) -> void:
+	OutputFieldRef.push_paragraph(HORIZONTAL_ALIGNMENT_LEFT)
+	
 	if color != Color.WHITE: 
 		OutputFieldRef.push_color(color)
 	
-	OutputFieldRef.push_paragraph(HORIZONTAL_ALIGNMENT_LEFT)
 	OutputFieldRef.append_text(text)
 	OutputFieldRef.pop_all()
 
@@ -246,6 +251,7 @@ size_flags_vertical = 3
 focus_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_opm5p")
 theme_override_styles/normal = SubResource("StyleBoxFlat_6ctxl")
+bbcode_enabled = true
 scroll_following = true
 selection_enabled = true
 
