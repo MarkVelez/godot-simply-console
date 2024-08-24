@@ -10,6 +10,7 @@ extends Window
 @onready var InputFieldRef: LineEdit = %InputField
 @onready var CommandParserRef: CommandParser = $CommandParser
 @onready var CommandLexerRef: CommandLexer = $CommandLexer
+@onready var SuggestionsRef: PanelContainer = %CommandSuggestions
 
 # Response limits
 const MAX_RESPONSES: int = 256
@@ -37,26 +38,32 @@ func on_close_requested() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		# Move up in command history
-		if (
-			event.pressed
-			and event.keycode == KEY_UP
-			and not commandHistory_.is_empty()
-		):
-			if historyPosition != 0:
-				historyPosition -= 1
-			InputFieldRef.set_text(commandHistory_[historyPosition])
-		
-		# Move down in command history
-		if (
-			event.pressed
-			and event.keycode == KEY_DOWN
-			and not commandHistory_.is_empty()
-		):
-			if historyPosition != commandHistory_.size() - 1:
-				historyPosition += 1
-			InputFieldRef.set_text(commandHistory_[historyPosition])
+	if (
+		SuggestionsRef.is_visible_in_tree()
+		or commandHistory_.is_empty()
+		or not event is InputEventKey
+	):
+		return
+	
+	# Move up in command history
+	if event.pressed and event.keycode == KEY_UP:
+		if historyPosition < commandHistory_.size() - 1:
+			historyPosition += 1
+		InputFieldRef.set_text(commandHistory_[historyPosition])
+		InputFieldRef.set_caret_column(
+			commandHistory_[historyPosition].length()
+		)
+		set_input_as_handled()
+	
+	# Move down in command history
+	if event.pressed and event.keycode == KEY_DOWN:
+		if historyPosition > 0:
+			historyPosition -= 1
+		InputFieldRef.set_text(commandHistory_[historyPosition])
+		InputFieldRef.set_caret_column(
+			commandHistory_[historyPosition].length()
+		)
+		set_input_as_handled()
 
 
 func on_output_field_updated() -> void:
@@ -109,11 +116,11 @@ func update_command_history(text: String) -> void:
 		commandHistory_.remove_at(commandHistory_.find(text))
 	
 	commandHistory_.append(text)
-	historyPosition = commandHistory_.size()
-	
 	# Cap command history size
 	if commandHistory_.size() > MAX_COMMAND_HISTORY:
 		commandHistory_.remove_at(0)
+	
+	historyPosition = commandHistory_.size() - 1
 
 
 #region Print methods
