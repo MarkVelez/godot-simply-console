@@ -8,9 +8,16 @@ Since the console is made to be accessible by players, it does not have the abil
 
 The console can also be directly printed to to display errors, warnings or general messages.
 
+## Current features
+- Custom commands to call set functions on any object
+- Permission levels and cheats to restrict command access
+- Graphical editor plugin for creating and editing commands
+- Print functions
+- Command history
+- Command suggestions
+
 ## Planned features
 
-- Command hints and suggestion
 - In-Game object picker to get references
 
 ## Guides
