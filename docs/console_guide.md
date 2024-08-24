@@ -19,6 +19,8 @@ The method used to limit the amount of responses has been changed in Godot 4.3 a
 
 The structure for commands is `<command>` `<arguments>`. The command and arguments are separated by a single space. String arguments can be written as one word or inside of quotes which will let you use spaces in the text. Vector arguments are written the same as in code, i.e., (x, y), and spaces will be ignored inside of the parentheses.
 
+When typing a command into the console, if it is a valid command, command suggestions will show up. The suggestion list has a limit of five suggestions, which can be changed inside of the `CommandSuggestions` script by changing the value of `MAX_SUGGESTIONS`. When there are more valid suggestions than the max amount, the remaining suggestions are cached and an indicator arrow will appear at the top of the suggestion list. You can navigate the suggestion list by using the up and down arrows or by clicking on a suggestion. When clicking on a selected suggestion or pressing enter when a suggestion is selected, that suggestion will be copied to the input field. The suggestion list can be dismissed by either clicking away from it or pressing the escape button, this will also make it so it wont appear again until the current command is submitted.
+
 The console comes with three build in commands:
 - `help` shows all **accessible** commands. Optionally a command can be added as an argument which will show the arguments for the command. *Accessible means that the player has an adequate permission level and or has cheats enabled if it is required.*
 
