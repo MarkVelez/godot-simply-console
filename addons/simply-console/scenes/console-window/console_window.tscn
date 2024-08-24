@@ -1,0 +1,130 @@
+[gd_scene load_steps=12 format=3 uid="uid://cmrfdlp25wcby"]
+
+[ext_resource type="Script" path="res://addons/simply-console/scripts/console_window.gd" id="1_l0a50"]
+[ext_resource type="Script" path="res://addons/simply-console/scripts/command_parser.gd" id="1_oe0g5"]
+[ext_resource type="Script" path="res://addons/simply-console/scripts/command_lexer.gd" id="2_mcw8w"]
+[ext_resource type="Script" path="res://addons/simply-console/scripts/command_suggestions.gd" id="4_sg8dq"]
+[ext_resource type="PackedScene" uid="uid://rdai81bo3phn" path="res://addons/simply-console/scenes/console-window/suggestion.tscn" id="5_ri1xj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_opm5p"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6ctxl"]
+content_margin_left = 4.0
+content_margin_right = 4.0
+bg_color = Color(0.133333, 0.133333, 0.133333, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uartp"]
+content_margin_left = 4.0
+bg_color = Color(0.0846899, 0.0846899, 0.0846899, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="Image" id="Image_nmlye"]
+data = {
+"data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 179, 179, 179, 153, 178, 178, 178, 166, 184, 184, 184, 18, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 184, 184, 184, 18, 178, 178, 178, 166, 178, 178, 178, 151, 255, 255, 255, 0, 255, 255, 255, 0, 178, 178, 178, 166, 178, 178, 178, 217, 177, 177, 177, 179, 184, 184, 184, 18, 255, 255, 255, 0, 255, 255, 255, 0, 184, 184, 184, 18, 178, 178, 178, 179, 178, 178, 178, 217, 178, 178, 178, 165, 255, 255, 255, 0, 255, 255, 255, 0, 184, 184, 184, 18, 177, 177, 177, 179, 178, 178, 178, 217, 177, 177, 177, 179, 184, 184, 184, 18, 184, 184, 184, 18, 178, 178, 178, 179, 178, 178, 178, 217, 177, 177, 177, 179, 180, 180, 180, 17, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 184, 184, 184, 18, 177, 177, 177, 179, 178, 178, 178, 217, 178, 178, 178, 197, 178, 178, 178, 197, 178, 178, 178, 217, 177, 177, 177, 179, 180, 180, 180, 17, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 184, 184, 184, 18, 177, 177, 177, 179, 178, 178, 178, 217, 178, 178, 178, 217, 177, 177, 177, 179, 180, 180, 180, 17, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 184, 184, 184, 18, 178, 178, 178, 165, 178, 178, 178, 165, 180, 180, 180, 17, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0),
+"format": "RGBA8",
+"height": 12,
+"mipmaps": false,
+"width": 12
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_vssnd"]
+image = SubResource("Image_nmlye")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_w2kaw"]
+
+[node name="ConsoleWindow" type="Window"]
+title = "Console"
+initial_position = 2
+size = Vector2i(512, 512)
+transient = true
+script = ExtResource("1_l0a50")
+
+[node name="CommandParser" type="Node" parent="."]
+script = ExtResource("1_oe0g5")
+
+[node name="CommandLexer" type="Node" parent="."]
+script = ExtResource("2_mcw8w")
+
+[node name="ConsolePanel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="ConsolePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConsolePanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OutputField" type="RichTextLabel" parent="ConsolePanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_opm5p")
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ctxl")
+bbcode_enabled = true
+scroll_following = true
+selection_enabled = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConsolePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="CommandSuggestions" type="PanelContainer" parent="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_uartp")
+script = ExtResource("4_sg8dq")
+SuggestionScene = ExtResource("5_ri1xj")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="OverflowIndicator" type="TextureRect" parent="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+texture = SubResource("ImageTexture_vssnd")
+stretch_mode = 3
+flip_v = true
+
+[node name="SuggestionList" type="VBoxContainer" parent="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+alignment = 2
+
+[node name="InputField" type="LineEdit" parent="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_w2kaw")
+caret_blink = true
+
+[connection signal="close_requested" from="." to="." method="on_close_requested"]
+[connection signal="finished" from="ConsolePanel/MarginContainer/VBoxContainer/OutputField" to="." method="on_output_field_updated"]
+[connection signal="mouse_entered" from="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions" to="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions" method="on_mouse_entered"]
+[connection signal="mouse_exited" from="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions" to="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions" method="on_mouse_exited"]
+[connection signal="text_changed" from="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/InputField" to="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions" method="on_input_field_text_changed"]
+[connection signal="text_submitted" from="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/InputField" to="." method="on_input_field_text_submitted"]
+[connection signal="text_submitted" from="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/InputField" to="ConsolePanel/MarginContainer/VBoxContainer/VBoxContainer/CommandSuggestions" method="on_input_field_text_submitted"]

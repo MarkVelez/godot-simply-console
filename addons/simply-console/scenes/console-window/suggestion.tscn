@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://rdai81bo3phn"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dxks5"]
+bg_color = Color(1, 1, 1, 0.196078)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+expand_margin_left = 4.0
+
+[node name="Suggestion" type="RichTextLabel"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+focus_mode = 1
+theme_override_styles/focus = SubResource("StyleBoxFlat_dxks5")
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
