@@ -23,12 +23,7 @@ func parse_command(
 	if permission < ConsoleDataManager.COMMAND_LIST_[command]["minPermission"]:
 		return "Permission level too low to use this command."
 	
-	var response
 	var TargetRef: Node = get_command_target(command, keyword)
-	var method: String = ConsoleDataManager.COMMAND_LIST_[command]["method"]
-	var methodArguments_: Array[Dictionary] =\
-		get_method_arguments(TargetRef, method)
-	
 	if not TargetRef:
 		if keyword:
 			return "Keyword '" + keyword + "' does not have a reference."
@@ -36,6 +31,7 @@ func parse_command(
 			return "Command '" + command + "' does not exist in global scope."
 		return "Could not find command target for '" + command + "'."
 	
+	var method: String = ConsoleDataManager.COMMAND_LIST_[command]["method"]
 	if not method_exists(TargetRef, method):
 		return (
 			"Command '"
@@ -45,11 +41,15 @@ func parse_command(
 			+ "'."
 		)
 	
+	var methodArguments_: Array[Dictionary] =\
+		get_method_arguments(TargetRef, method)
+	var response
+	
 	# Check if command expects arguments
 	if arguments_optional(methodArguments_, arguments_):
 		response = TargetRef.call(method)
 		if response:
-			return response
+			return str(response)
 		return ""
 	
 	if arguments_.size() > methodArguments_.size():
@@ -90,7 +90,7 @@ func parse_command(
 	
 	response = TargetRef.callv(method, parsedArguments_["argumentList"])
 	if response:
-		return response
+		return str(response)
 	return ""
 
 
