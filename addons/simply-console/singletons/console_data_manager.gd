@@ -34,39 +34,24 @@ func get_built_in_commands() -> Dictionary:
 	return {
 		"help": {
 			"target": "",
-			"requiresKeyword": false,
 			"minPermission": PermissionLevel.NONE,
 			"cheats": false,
-			"method": "show_command_list",
-			"argumentList": [
-				{
-					"name": "command",
-					"type": TYPE_STRING,
-					"optional": true
-				}
-			]
+			"requiresKeyword": false,
+			"method": "show_command_list"
 		},
 		"clear": {
 			"target": "",
-			"requiresKeyword": false,
 			"minPermission": PermissionLevel.NONE,
 			"cheats": false,
-			"method": "clear_console",
-			"argumentList": []
+			"requiresKeyword": false,
+			"method": "clear_console"
 		},
 		"cheats": {
 			"target": "",
-			"requiresKeyword": false,
 			"minPermission": PermissionLevel.NONE,
 			"cheats": false,
-			"method": "toggle_cheats",
-			"argumentList": [
-				{
-					"name": "enabled",
-					"type": TYPE_BOOL,
-					"optional": true
-				}
-			]
+			"requiresKeyword": false,
+			"method": "toggle_cheats"
 		},
 	}
 

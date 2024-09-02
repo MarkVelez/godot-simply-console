@@ -8,9 +8,9 @@ extends TabBar
 signal changes_made
 
 @onready var CommandListRef: ItemList = %List
-@onready var CommandTypeRef: OptionButton = %CommandType
 @onready var PermissionRef: OptionButton = %PermissionLevel
 @onready var CheatsRef: CheckBox = %RequiresCheats
+@onready var KeywordRef: CheckBox = %RequiresKeyword
 @onready var TargetNameRef: LineEdit = %TargetName
 @onready var SelectButtonRef: Button = %SelectAll
 
@@ -33,9 +33,9 @@ func update_command_list() -> void:
 
 
 func on_edit_commands_pressed() -> void:
-	var type: int = CommandTypeRef.get_selected()
 	var permission: int = PermissionRef.get_selected()
 	var cheats: bool = CheatsRef.is_pressed()
+	var keyword: bool = KeywordRef.is_pressed()
 	var target: String = TargetNameRef.get_text()
 	
 	for i in CommandListRef.get_selected_items():
@@ -43,9 +43,9 @@ func on_edit_commands_pressed() -> void:
 			ConsoleDataManager.COMMAND_LIST_[CommandListRef.get_item_text(i)]
 		
 		commandInfo_[\"target\"] = target
-		commandInfo_[\"type\"] = type
 		commandInfo_[\"minPermission\"] = permission
 		commandInfo_[\"cheats\"] = cheats
+		commandInfo_[\"requiresKeyword\"] = keyword
 	
 	reset_tab()
 	emit_signal(\"changes_made\")
@@ -53,9 +53,9 @@ func on_edit_commands_pressed() -> void:
 
 func reset_tab() -> void:
 	CommandListRef.deselect_all()
-	CommandTypeRef.select(0)
 	PermissionRef.select(0)
 	CheatsRef.set_pressed(false)
+	KeywordRef.set_pressed(false)
 	TargetNameRef.clear()
 	SelectButtonRef.set_text(\"Select All\")
 
@@ -90,6 +90,11 @@ func on_list_item_selected(_index, _selected) -> void:
 		SelectButtonRef.set_text(\"Deselect All\")
 	else:
 		SelectButtonRef.set_text(\"Select All\")
+
+
+func on_requires_keyword_toggled(state: bool) -> void:
+	TargetNameRef.set_editable(!state)
+	TargetNameRef.clear()
 "
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rlw61"]
@@ -169,33 +174,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_ba6ah")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer"]
 layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="Type" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer"]
-layout_mode = 2
-tooltip_text = "The scope of the command.
-A GLOBAL command can call a method from an autoload.
-A LOCAL command can only call a method from a node in the current scene tree.
-
-LOCAL commands can be significantly slower compared to GLOBAL commands 
-as they do not have a direct reference to the target node. 
-Therefore if you have to use a LOCAL command, 
-try to put the target node as close to the root as possible and avoid nesting."
-
-[node name="Label" type="Label" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Type"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Command Type"
-
-[node name="CommandType" type="OptionButton" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Type"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-selected = 0
-item_count = 2
-popup/item_0/text = "GLOBAL"
-popup/item_1/text = "LOCAL"
-popup/item_1/id = 1
+theme_override_constants/separation = 6
 
 [node name="Permission" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer"]
 layout_mode = 2
@@ -222,6 +201,21 @@ size_flags_horizontal = 3
 text = "Requires Cheats"
 
 [node name="RequiresCheats" type="CheckBox" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Cheats"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "On"
+
+[node name="Keyword" type="VBoxContainer" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Toggle whether the command requires a keyword to be used."
+
+[node name="Label" type="Label" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Keyword"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Requires Keyword"
+
+[node name="RequiresKeyword" type="CheckBox" parent="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Keyword"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -258,5 +252,6 @@ text = "Remove Commands"
 
 [connection signal="multi_selected" from="VBoxContainer/CommandList/ScrollContainer/List" to="." method="on_list_item_selected"]
 [connection signal="pressed" from="VBoxContainer/CommandList/SelectAll" to="." method="on_select_all_pressed"]
+[connection signal="toggled" from="VBoxContainer/CommandInfo/PanelContainer/VBoxContainer/Keyword/RequiresKeyword" to="." method="on_requires_keyword_toggled"]
 [connection signal="pressed" from="VBoxContainer/CommandInfo/HBoxContainer/EditCommands" to="." method="on_edit_commands_pressed"]
 [connection signal="pressed" from="VBoxContainer/CommandInfo/HBoxContainer/RemoveCommands" to="." method="on_remove_commands_pressed"]

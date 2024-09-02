@@ -7,6 +7,60 @@ extends TabBar
 
 signal changes_made
 
+
+func on_validate_pressed() -> void:
+	const VALID_COMMAND_: Dictionary = {
+		\"target\": [TYPE_STRING, \"\"],
+		\"minPermission\": [TYPE_FLOAT, 0],
+		\"cheats\": [TYPE_BOOL, false],
+		\"requiresKeyword\": [TYPE_BOOL, false],
+		\"method\": [TYPE_STRING, \"\"]
+	}
+	validate_command_list(VALID_COMMAND_)
+	emit_signal(\"changes_made\")
+
+
+func validate_command_list(VALID_COMMAND_: Dictionary) -> void:
+	var COMMAND_LIST_: Dictionary = ConsoleDataManager.COMMAND_LIST_
+	
+	for commandName in COMMAND_LIST_:
+		var command_: Dictionary = COMMAND_LIST_[commandName]
+		for attribute in command_.keys():
+			if not VALID_COMMAND_.has(attribute):
+				print(
+					\"Invalid attribute '\"
+					+ attribute
+					+ \"' found in '\"
+					+ commandName
+					+ \"'.\"
+				)
+				command_.erase(attribute)
+				continue
+			
+			for validAttribute in VALID_COMMAND_:
+				if not command_.has(validAttribute):
+					print(
+					\"Attribute '\"
+					+ validAttribute
+					+ \"' missing from '\"
+					+ commandName
+					+ \"'.\"
+				)
+					command_[validAttribute] =\\
+						VALID_COMMAND_[validAttribute][1]
+			
+			var validType = VALID_COMMAND_[attribute][0]
+			if typeof(command_[attribute]) != validType:
+				print(
+					\"Invalid attribute value for '\"
+					+ attribute
+					+ \"' found in '\"
+					+ commandName
+					+ \"'.\"
+				)
+				command_[attribute] = VALID_COMMAND_[attribute][1]
+
+
 func on_restore_pressed() -> void:
 	var BUILT_IN_COMMANDS_: Dictionary =\\
 		ConsoleDataManager.get_built_in_commands()
@@ -58,6 +112,10 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_7vkcq")
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
 layout_mode = 2
 
+[node name="Validate" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Validate Command List"
+
 [node name="Restore" type="Button" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 text = "Restore Built-In Commands"
@@ -66,5 +124,6 @@ text = "Restore Built-In Commands"
 layout_mode = 2
 text = "Reset Command List"
 
+[connection signal="pressed" from="PanelContainer/VBoxContainer/Validate" to="." method="on_validate_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/Restore" to="." method="on_restore_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/Reset" to="." method="on_reset_pressed"]
