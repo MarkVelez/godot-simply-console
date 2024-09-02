@@ -10,20 +10,22 @@ class_name CommandLexer
 
 
 ## Processes the provided text for the parser to use.
-func process_input_text(text: String) -> PackedStringArray:
-	var processedText_: PackedStringArray = []
+func process_input_text(text: String) -> Dictionary:
+	var processedText_: Dictionary = {
+		"command": "",
+		"arguments": [],
+		"keyword": ""
+	}
 	# Ignore leading and trailing whitespace
 	text = text.strip_edges()
 	var next: int = text.find(" ")
 	var previous: int = next
 	
-	# Check if no arguments were inputted
-	if next == -1:
-		processedText_.append(text)
-		return processedText_
-	
 	# Append the command to the start of the array
-	processedText_.append(text.substr(0, next))
+	var command: String = text.substr(0, next)
+	if command.contains("."):
+		processedText_["keyword"] = command.substr(0, command.find("."))
+	processedText_["command"] = command.substr(command.find(".") + 1, next)
 	
 	# Get the remaining arguments
 	while next != -1:
@@ -33,7 +35,9 @@ func process_input_text(text: String) -> PackedStringArray:
 			"\"":
 				var start: int = next + 2
 				var end: int = text.find("\"", start)
-				processedText_.append(text.substr(start, end - start))
+				processedText_["arguments"].append(
+					text.substr(start, end - start)
+				)
 				previous = end + 1
 			# Extract vectors and remove spaces
 			"(":
@@ -41,7 +45,7 @@ func process_input_text(text: String) -> PackedStringArray:
 				var end: int = text.find(")", start)
 				var content: String = text.substr(start, end - start + 1)
 				content = content.replace(" ", "")
-				processedText_.append(content)
+				processedText_["arguments"].append(content)
 				previous = end + 1
 			# Extract a normal argument
 			_:
@@ -49,7 +53,9 @@ func process_input_text(text: String) -> PackedStringArray:
 				var end: int = text.find(" ", start)
 				if end == -1:
 					end = text.length()
-				processedText_.append(text.substr(start, end - start))
+				processedText_["arguments"].append(
+					text.substr(start, end - start)
+				)
 				previous = end
 		
 		# Go to the next argument

@@ -89,15 +89,13 @@ func on_input_field_text_submitted(text: String) -> void:
 	update_command_history(text)
 	
 	# Separate the command name and the arguments
-	var processedText_: PackedStringArray =\
+	var processedText_: Dictionary =\
 		CommandLexerRef.process_input_text(text)
-	var command: String = processedText_[0]
-	processedText_.remove_at(0)
-	
 	var response: String =\
 		CommandParserRef.parse_command(
-			command,
-			processedText_,
+			processedText_["command"],
+			processedText_["arguments"],
+			processedText_["keyword"],
 			permissionLevel,
 			cheatsEnabled
 		)

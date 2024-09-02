@@ -1,13 +1,6 @@
 @tool
 extends Node
 
-# GLOBAL = Singleton(Autorun)
-# LOCAL = Scene Node
-enum CommandType {
-	GLOBAL,
-	LOCAL
-}
-
 # Permissions to restrict commands
 enum PermissionLevel {
 	NONE,
@@ -19,6 +12,7 @@ const DIRECTORY: String = "res://addons/simply-console/data/"
 const PATH: String = DIRECTORY + FILE
 
 var COMMAND_LIST_: Dictionary
+var keywordList_: Dictionary
 
 
 func _ready() -> void:
@@ -40,7 +34,7 @@ func get_built_in_commands() -> Dictionary:
 	return {
 		"help": {
 			"target": "",
-			"type": CommandType.LOCAL,
+			"requiresKeyword": false,
 			"minPermission": PermissionLevel.NONE,
 			"cheats": false,
 			"method": "show_command_list",
@@ -54,7 +48,7 @@ func get_built_in_commands() -> Dictionary:
 		},
 		"clear": {
 			"target": "",
-			"type": CommandType.LOCAL,
+			"requiresKeyword": false,
 			"minPermission": PermissionLevel.NONE,
 			"cheats": false,
 			"method": "clear_console",
@@ -62,7 +56,7 @@ func get_built_in_commands() -> Dictionary:
 		},
 		"cheats": {
 			"target": "",
-			"type": CommandType.LOCAL,
+			"requiresKeyword": false,
 			"minPermission": PermissionLevel.NONE,
 			"cheats": false,
 			"method": "toggle_cheats",

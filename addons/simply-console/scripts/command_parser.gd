@@ -6,12 +6,16 @@ class_name CommandParser
 ## Parses a command and it's arguments, if it has any, and executes them if they are valid.
 func parse_command(
 	command: String,
-	ARGUMENTS_: PackedStringArray,
+	arguments_: Array,
+	keyword: String,
 	permission: ConsoleDataManager.PermissionLevel,
 	cheatsEnabled: bool
 ) -> String:
 	if not ConsoleDataManager.COMMAND_LIST_.has(command):
 		return "Command '" + command + "' does not exist."
+	
+	if keyword and not ConsoleDataManager.keywordList_.has(keyword):
+		return "Keyword '" + keyword + "' does not exist."
 	
 	if not cheatsEnabled and ConsoleDataManager.COMMAND_LIST_[command]["cheats"]:
 		return "Command requires cheats to be enabled."
@@ -20,94 +24,147 @@ func parse_command(
 		return "Permission level too low to use this command."
 	
 	var response
-	var TargetRef: Node = get_command_target(command)
+	var TargetRef: Node = get_command_target(command, keyword)
 	var method: String = ConsoleDataManager.COMMAND_LIST_[command]["method"]
-	var METHOD_ARGUMENTS_: Array =\
-		ConsoleDataManager.COMMAND_LIST_[command]["argumentList"]
+	var methodArguments_: Array[Dictionary] =\
+		get_method_arguments(TargetRef, method)
 	
 	if not TargetRef:
+		if keyword:
+			return "Keyword '" + keyword + "' does not have a reference."
+		if ConsoleDataManager.COMMAND_LIST_[command]["requiresKeyword"]:
+			return "Command '" + command + "' does not exist in global scope."
 		return "Could not find command target for '" + command + "'."
 	
+	if not method_exists(TargetRef, method):
+		return (
+			"Command '"
+			+ command
+			+ "' does not exist in '"
+			+ TargetRef.get_name()
+			+ "'."
+		)
+	
 	# Check if command expects arguments
-	if arguments_optional(METHOD_ARGUMENTS_, ARGUMENTS_):
+	if arguments_optional(methodArguments_, arguments_):
 		response = TargetRef.call(method)
 		if response:
 			return response
 		return ""
 	
-	if ARGUMENTS_.size() > METHOD_ARGUMENTS_.size():
+	if arguments_.size() > methodArguments_.size():
 		return (
 			"Too many arguments for command '"
 			+ command
 			+ "'. Expected "
-			+ str(METHOD_ARGUMENTS_.size())
+			+ str(methodArguments_.size())
 			+ ", but got "
-			+ str(ARGUMENTS_.size())
+			+ str(arguments_.size())
 			+ "." 
 		)
 	
-	if not METHOD_ARGUMENTS_.is_empty() and ARGUMENTS_.is_empty():
+	if not methodArguments_.is_empty() and arguments_.is_empty():
 		return (
 			"Too few arguments for command '"
 			+ command
 			+ "'. Expected "
-			+ str(METHOD_ARGUMENTS_.size())
+			+ str(methodArguments_.size())
 			+ ", but got "
-			+ str(ARGUMENTS_.size())
+			+ str(arguments_.size())
 			+ "." 
 		)
 	
-	var PARSED_ARGUMENTS_: Dictionary =\
-		parse_argument_list(METHOD_ARGUMENTS_, ARGUMENTS_)
+	var parsedArguments_: Dictionary =\
+		parse_argument_list(methodArguments_, arguments_)
 	
-	if PARSED_ARGUMENTS_.has("invalidArgument"):
+	if parsedArguments_.has("invalidArgument"):
 		return (
 			"Invalid type for argument "
-			+ str(PARSED_ARGUMENTS_["invalidArgument"] + 1)
+			+ str(parsedArguments_["invalidArgument"] + 1)
 			+ " expected '"
 			+ type_string(
-				METHOD_ARGUMENTS_[PARSED_ARGUMENTS_["invalidArgument"]]["type"]
+				methodArguments_[parsedArguments_["invalidArgument"]]["type"]
 			)
 			+ "'."
 		)
 	
-	response = TargetRef.callv(method, PARSED_ARGUMENTS_["argumentList"])
+	response = TargetRef.callv(method, parsedArguments_["argumentList"])
 	if response:
 		return response
 	return ""
 
 
 ## Gets the reference to the command's target node or returns null if it's not found.
-func get_command_target(command: String) -> Node:
+func get_command_target(command: String, keyword: String) -> Node:
 	var target: String = ConsoleDataManager.COMMAND_LIST_[command]["target"]
-	var type: int = ConsoleDataManager.COMMAND_LIST_[command]["type"]
 	
-	match type:
-		ConsoleDataManager.CommandType.GLOBAL:
-			return get_node("/root/" + target)
+	if keyword.is_empty():
+		if ConsoleDataManager.COMMAND_LIST_[command]["requiresKeyword"]:
+			return null
 		
-		ConsoleDataManager.CommandType.LOCAL:
-			if target.is_empty():
-				return get_parent()
-			
+		if target.is_empty():
+			return get_parent()
+		
+		var NodeRef: Node = get_node_or_null("/root/" + target)
+		if NodeRef == null:
 			return get_tree().root.find_child(target, true , false)
+	else:
+		if ConsoleDataManager.keywordList_.has(keyword):
+			return ConsoleDataManager.keywordList_[keyword]
 	
 	return null
 
 
-## Checks if the command expects any arguments.
-func arguments_optional(
-	METHOD_ARGUMENTS_: Array,
-	ARGUMENTS_: Array[String]
-) -> bool:
-	if not ARGUMENTS_.is_empty():
+func get_method_arguments(
+	TargetRef: Node,
+	commandMethod: String
+) -> Array[Dictionary]:
+	var methodArguments_: Array = []
+	var defaultValues_: Array = []
+	for method in TargetRef.get_method_list():
+		if method["name"] == commandMethod:
+			methodArguments_ = method["args"]
+			defaultValues_ = method["default_args"]
+			break
+	
+	var argumentList_: Array[Dictionary] = []
+	for i in range(methodArguments_.size()):
+		var argument: Dictionary = methodArguments_[i]
+		var isOptional: bool = false
+		
+		if i >= methodArguments_.size() - defaultValues_.size():
+			isOptional = true
+		
+		argumentList_.append({
+			"name": argument["name"],
+			"type": argument["type"],
+			"optional": isOptional
+		})
+	
+	return argumentList_
+
+
+## Check if the target has the command method.
+func method_exists(TargetRef: Node, method: String) -> bool:
+	if not TargetRef.has_method(method):
 		return false
 	
-	if METHOD_ARGUMENTS_.is_empty():
+	return true
+
+
+## Checks if the command expects any arguments.
+func arguments_optional(
+	methodArguments_: Array[Dictionary],
+	arguments_: Array
+) -> bool:
+	if not arguments_.is_empty():
+		return false
+	
+	if methodArguments_.is_empty():
 		return true
 	
-	for ARGUMENT_ in METHOD_ARGUMENTS_:
-		if not ARGUMENT_["optional"]:
+	for argument_ in methodArguments_:
+		if not argument_["optional"]:
 			return false
 	
 	return true
@@ -117,85 +174,85 @@ func arguments_optional(
 ## Returns the index of the invalid argument if there are any.[br][br]
 ## [i]It only returns the first invalid argument if there are multiple.[/i]
 func parse_argument_list(
-	METHOD_ARGUMENTS_: Array,
-	ARGUMENTS_: PackedStringArray
+	methodArguments_: Array[Dictionary],
+	arguments_: Array
 ) -> Dictionary:
-	var PARSED_ARGUMENTS_: Dictionary = {
+	var parsedArguments_: Dictionary = {
 		"argumentList": []
 	}
 	var i: int = 0
 	var invalidArgument: int = -1
 	
-	for ARGUMENT_ in METHOD_ARGUMENTS_:
-		var argument: String = ARGUMENTS_[i]
+	for argument_ in methodArguments_:
+		var argument: String = arguments_[i]
 		# Type match and convert command argument to method argument
 		invalidArgument = parse_argument_type(
-			PARSED_ARGUMENTS_,
-			int(ARGUMENT_["type"]),
+			parsedArguments_,
+			int(argument_["type"]),
 			argument,
 			i
 		)
 		if invalidArgument > -1:
-			PARSED_ARGUMENTS_["invalidArgument"] = invalidArgument
+			parsedArguments_["invalidArgument"] = invalidArgument
 			break
 		
-		if i == ARGUMENTS_.size() - 1:
+		if i == arguments_.size() - 1:
 			break
 		
 		i += 1
 	
-	return PARSED_ARGUMENTS_
+	return parsedArguments_
 
 
 ## Type matches the argument provided and converts it to the expect type.
 ## Returns the index of the argument if it is invalid.
 func parse_argument_type(
-	PARSED_ARGUMENTS_: Dictionary,
+	parsedArguments_: Dictionary,
 	type: int,
 	argument: String,
 	i: int
 ) -> int:
 	match type:
 		TYPE_STRING:
-			PARSED_ARGUMENTS_["argumentList"].append(argument)
+			parsedArguments_["argumentList"].append(argument)
 		
 		TYPE_INT:
 			if argument.is_valid_int():
-				PARSED_ARGUMENTS_["argumentList"].append(int(argument))
+				parsedArguments_["argumentList"].append(int(argument))
 			else:
 				return i
 		
 		TYPE_FLOAT:
 			if argument.is_valid_float():
-				PARSED_ARGUMENTS_["argumentList"].append(float(argument))
+				parsedArguments_["argumentList"].append(float(argument))
 			else:
 				return i
 		
 		TYPE_BOOL:
 			match argument:
 				"true":
-					PARSED_ARGUMENTS_["argumentList"].append(true)
+					parsedArguments_["argumentList"].append(true)
 				"false":
-					PARSED_ARGUMENTS_["argumentList"].append(false)
+					parsedArguments_["argumentList"].append(false)
 				_:
 					return i
 		
 		TYPE_VECTOR2, TYPE_VECTOR2I:
 			if argument[0] == "(" and argument[argument.length() - 1] == ")":
 				var isIntOnly: bool = false if type == TYPE_VECTOR2 else true
-				var AXISES_: PackedStringArray =\
+				var axises_: PackedStringArray =\
 					parse_vector(argument, 2, false)
 				
-				if AXISES_.is_empty():
+				if axises_.is_empty():
 					return i
 				
-				PARSED_ARGUMENTS_["argumentList"].append(
+				parsedArguments_["argumentList"].append(
 					Vector2(
-						float(AXISES_[0]),
-						float(AXISES_[1])
+						float(axises_[0]),
+						float(axises_[1])
 					) if type == TYPE_VECTOR2 else Vector2i(
-						int(AXISES_[0]),
-						int(AXISES_[1])
+						int(axises_[0]),
+						int(axises_[1])
 					)
 				)
 			else:
@@ -204,22 +261,30 @@ func parse_argument_type(
 		TYPE_VECTOR3, TYPE_VECTOR3I:
 			if argument[0] == "(" and argument[argument.length() - 1] == ")":
 				var isIntOnly: bool = false if type == TYPE_VECTOR3 else true
-				var AXISES_: PackedStringArray =\
+				var axises_: PackedStringArray =\
 					parse_vector(argument, 3, false)
 				
-				if AXISES_.is_empty():
+				if axises_.is_empty():
 					return i
 				
-				PARSED_ARGUMENTS_["argumentList"].append(
+				parsedArguments_["argumentList"].append(
 					Vector3(
-						float(AXISES_[0]),
-						float(AXISES_[1]),
-						float(AXISES_[2])
+						float(axises_[0]),
+						float(axises_[1]),
+						float(axises_[2])
 					) if type == TYPE_VECTOR3 else Vector3i(
-						int(AXISES_[0]),
-						int(AXISES_[1]),
-						int(AXISES_[2])
+						int(axises_[0]),
+						int(axises_[1]),
+						int(axises_[2])
 					)
+				)
+			else:
+				return i
+		
+		TYPE_OBJECT:
+			if ConsoleDataManager.keywordList_.has(argument):
+				parsedArguments_["argumentList"].append(
+					ConsoleDataManager.keywordList_[argument]
 				)
 			else:
 				return i
@@ -235,12 +300,12 @@ func parse_vector(
 ) -> PackedStringArray:
 	argument = argument.trim_prefix("(")
 	argument = argument.trim_suffix(")")
-	var AXISES_: PackedStringArray = argument.split(",", false)
+	var axises_: PackedStringArray = argument.split(",", false)
 	
-	if AXISES_.size() != axisCount:
+	if axises_.size() != axisCount:
 		return []
 	
-	for axis in AXISES_:
+	for axis in axises_:
 		if isIntOnly:
 			if not axis.is_valid_int():
 				return []
@@ -248,4 +313,4 @@ func parse_vector(
 			if not axis.is_valid_float():
 				return []
 	
-	return AXISES_
+	return axises_
