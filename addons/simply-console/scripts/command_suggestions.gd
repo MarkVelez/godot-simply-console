@@ -105,29 +105,23 @@ func _input(event: InputEvent) -> void:
 		return
 	
 	var FocusRef = ViewportRef.gui_get_focus_owner()
-	
-	# Check if the suggestions are currently being selected
-	if FocusRef.get_parent().name == "SuggestionList":
-		if (
-			event.keycode != KEY_UP
-			and event.keycode != KEY_DOWN
-			and event.keycode != KEY_ENTER
-		):
-			InputFieldRef.grab_focus()
-		
-		# Select the suggestion and autocomplete when enter is pressed
-		if event.pressed and event.keycode == KEY_ENTER:
-			insert_suggestion(FocusRef.get_parsed_text())
-			ViewportRef.set_input_as_handled()
-			return
+	# Fallback to prevent issues
+	if not FocusRef:
+		InputFieldRef.grab_focus()
+		FocusRef = ViewportRef.gui_get_focus_owner()
 	
 	# Move upwards in the suggestion list when the up button is pressed
 	if event.pressed and event.keycode == KEY_UP:
 		# Start selecting if not selecting yet
 		if FocusRef.get_parent().name != "SuggestionList":
+			selectedIdx = currentSuggestions_.size() - 1
 			SuggestionListRef.get_child(
-				currentSuggestions_.size() - 1
+				selectedIdx
 			).grab_focus()
+			ViewportRef.set_input_as_handled()
+			return
+		
+		if overflowSuggestions_.is_empty() and selectedIdx == 0:
 			ViewportRef.set_input_as_handled()
 			return
 		
@@ -149,9 +143,17 @@ func _input(event: InputEvent) -> void:
 	if event.pressed and event.keycode == KEY_DOWN:
 		# Start selecting if not selecting yet
 		if FocusRef.get_parent().name != "SuggestionList":
+			selectedIdx = currentSuggestions_.size() - 1
 			SuggestionListRef.get_child(
-				currentSuggestions_.size() - 1
+				selectedIdx
 			).grab_focus()
+			ViewportRef.set_input_as_handled()
+			return
+		
+		if (
+			overflowSuggestions_.is_empty()
+			and selectedIdx == currentSuggestions_.size() - 1
+		):
 			ViewportRef.set_input_as_handled()
 			return
 		
@@ -163,11 +165,29 @@ func _input(event: InputEvent) -> void:
 			ViewportRef.set_input_as_handled()
 			return
 		
+		if overflowSuggestions_.is_empty():
+			return
+		
 		# Move along the overflow suggestions
 		overflowSuggestions_.push_back(currentSuggestions_.pop_front())
 		currentSuggestions_.append(overflowSuggestions_.pop_front())
 		update_all(InputFieldRef.get_text())
 		ViewportRef.set_input_as_handled()
+	
+	# Check if the suggestions are currently being selected
+	if FocusRef.get_parent().name == "SuggestionList":
+		if (
+			event.keycode != KEY_UP
+			and event.keycode != KEY_DOWN
+			and event.keycode != KEY_ENTER
+		):
+			InputFieldRef.grab_focus()
+		
+		# Select the suggestion and autocomplete when enter is pressed
+		if event.pressed and event.keycode == KEY_ENTER:
+			insert_suggestion(FocusRef.get_parsed_text())
+			ViewportRef.set_input_as_handled()
+			return
 
 
 func on_input_field_text_changed(text: String) -> void:
@@ -245,17 +265,6 @@ func update_suggestion(command: String, text: String) -> void:
 	SuggestionRef.append_text(text)
 	SuggestionRef.pop()
 	SuggestionRef.append_text(command.substr(text.length()))
-	
-	# Update arguments
-	var argumentList_: Array =\
-		ConsoleDataManager.COMMAND_LIST_[command]["argumentList"]
-	if argumentList_.is_empty():
-		return
-	
-	for argument in argumentList_:
-		SuggestionRef.push_color(Color.DARK_GRAY)
-		SuggestionRef.append_text(" <" + argument["name"] + ">")
-		SuggestionRef.pop()
 
 
 ## Updates all suggestions in the suggestion list.
