@@ -98,7 +98,7 @@ func parse_command(
 
 
 ## Gets the reference to the command's target node or returns null if it's not found.
-func get_command_target(command: String, keyword: String) -> Node:
+func get_command_target(command: String, keyword: String = "") -> Node:
 	var target: String = ConsoleDataManager.COMMAND_LIST_[command]["target"]
 	
 	if keyword.is_empty():

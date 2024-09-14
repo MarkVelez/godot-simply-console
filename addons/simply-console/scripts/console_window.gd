@@ -146,12 +146,12 @@ func output_comment(text: String) -> void:
 
 
 #region Console Commands
-func show_command_list(commandName: String = "") -> String:
+func show_command_list(filter: String = "") -> String:
 	var response: String = "List of available commands:\n"
 	var COMMAND_LIST_: Dictionary = ConsoleDataManager.COMMAND_LIST_
 	
 	# Show list of commands
-	if commandName == "":
+	if filter == "":
 		for command in COMMAND_LIST_:
 			# Only show accessible commands
 			if (
@@ -162,29 +162,50 @@ func show_command_list(commandName: String = "") -> String:
 		
 		return response.trim_suffix(", ")
 	
+	# Check for keyword
+	var keyword: String = ""
+	if filter.contains("."):
+		keyword = filter.substr(0, filter.find("."))
+		filter = filter.substr(keyword.length() + 1)
+	
+	# Check if filter command exists
+	if not COMMAND_LIST_.has(filter):
+		return "Command '" + filter + "' does not exist."
+	
 	# Check permission level requirement
-	if permissionLevel < COMMAND_LIST_[commandName]["minPermission"]:
-		return "Permission level too low for command '" + commandName + "'."
+	if permissionLevel < COMMAND_LIST_[filter]["minPermission"]:
+		return "Permission level too low for command '" + filter + "'."
 	
 	# Check cheats requirement
-	if cheatsEnabled < COMMAND_LIST_[commandName]["cheats"]:
-		return "Cheats are required for command '" + commandName + "'."
+	if cheatsEnabled < COMMAND_LIST_[filter]["cheats"]:
+		return "Cheats are required for command '" + filter + "'."
 	
 	# Show list of arguments for command
-	if COMMAND_LIST_.has(commandName):
-		if COMMAND_LIST_[commandName]["argumentList"].is_empty():
-			return "Command '" + commandName + "' does not have any arguments."
+	var TargetRef: Node =\
+		CommandParserRef.get_command_target(filter, keyword)
+	if not TargetRef:
+		if COMMAND_LIST_[filter]["requiresKeyword"]:
+			return "Command '" + filter + "' requires a keyword."
 		
-		response = "Argument(s) for '" + commandName + "':\n"
-		for ARGUMENT_ in COMMAND_LIST_[commandName]["argumentList"]:
-			response += ARGUMENT_["name"]
-			if ARGUMENT_["optional"]:
-				response += " (optional)"
-			response += "\n"
-		
-		return response.trim_suffix("\n")
+		return "Target for '" + filter + "' could not be found."
 	
-	return "Command '" + commandName + "' does not exist."
+	var argumentList_: Array[Dictionary] =\
+		CommandParserRef.get_method_arguments(
+			TargetRef,
+			COMMAND_LIST_[filter]["method"]
+		)
+	if argumentList_.is_empty():
+		return "Command '" + filter + "' does not have any arguments."
+	
+	response = "Argument(s) for '" + filter + "':\n"
+	for argument_ in argumentList_:
+		response += argument_["name"]
+		response += " : " + type_string(argument_["type"])
+		if argument_["optional"]:
+			response += " (optional)"
+		response += "\n"
+	
+	return response.trim_suffix("\n")
 
 
 func clear_console() -> void:

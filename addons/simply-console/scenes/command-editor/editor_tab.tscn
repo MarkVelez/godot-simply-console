@@ -71,7 +71,7 @@ func update_fields(COMMAND_INFO_: Dictionary = {}) -> void:
 	# Populate input fields
 	PermissionRef.select(COMMAND_INFO_[\"minPermission\"])
 	CheatsRef.set_pressed(COMMAND_INFO_[\"cheats\"])
-	CheatsRef.set_pressed(COMMAND_INFO_[\"requiresKeyword\"])
+	KeywordRef.set_pressed(COMMAND_INFO_[\"requiresKeyword\"])
 	TargetNameRef.set_text(COMMAND_INFO_[\"target\"])
 	TargetMethodRef.set_text(COMMAND_INFO_[\"method\"])
 
