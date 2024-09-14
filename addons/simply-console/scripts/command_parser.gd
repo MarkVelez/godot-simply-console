@@ -43,6 +43,9 @@ func parse_command(
 	
 	var methodArguments_: Array[Dictionary] =\
 		get_method_arguments(TargetRef, method)
+	if not validate_method_arguments(methodArguments_):
+		return "Arguments of target method has unsupported argument type(s)."
+	
 	var response
 	
 	# Check if command expects arguments
@@ -144,7 +147,27 @@ func get_method_arguments(
 	return argumentList_
 
 
-## Check if the target has the command method.
+## Checks if the target method's arguments are supported.
+func validate_method_arguments(methodArguments_: Array[Dictionary]) -> bool:
+	var VALID_TYPES_: Array = [
+		TYPE_STRING,
+		TYPE_INT,
+		TYPE_FLOAT,
+		TYPE_BOOL,
+		TYPE_VECTOR2,
+		TYPE_VECTOR2I,
+		TYPE_VECTOR3,
+		TYPE_VECTOR3I,
+		TYPE_OBJECT
+	]
+	for argument_ in methodArguments_:
+		if not VALID_TYPES_.has(argument_["type"]):
+			return false
+	
+	return true
+
+
+## Checks if the target has the command method.
 func method_exists(TargetRef: Node, method: String) -> bool:
 	if not TargetRef.has_method(method):
 		return false
