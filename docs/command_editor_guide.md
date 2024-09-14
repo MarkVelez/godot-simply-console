@@ -10,26 +10,22 @@ When opening the command editor, you are greeted with multiple input fields used
 
 - `Command Name` is the name that will be used inside of the console to call the command.
 
-- `Command Type` determines what type of target the command has.
-  - **GLOBAL** is used for autoload targets.
-  - **LOCAL** is used for targets inside of the game scene. LOCAL commands look through the whole game scene until they find their target, therefore they can be significantly slower compared to GLOBAL commands as they have a direct reference to their target. To minimize the performance hit, try to move the command target to as close to the scene root as possible and avoid nesting. Alternatively an intermediate node can be used as the target which will propagate the call to the appropriate node.
-
 - `Minimum Permission` let's you set a minimum permission requirement to use the command allowing the restriction of commands. Permission levels are hierarchical so a higher level permission will have the access to commands from the permission levels below it. If you want to add or change a permission level, you can do so by going to `singletons/console_data_manager.gd` and changing the `PermissionLevel` enum. *The player's permission level is stored in the console window and can be changed as needed.*
 
 - `Requires Cheats` let's you decide if the command requires cheats to be enabled to use.
+
+- `Requires Keyword` let's you decide if the command only works if used with a keyword. If you want to know how to add keywords, refer to the [Console Guide](console_guide.md#using-and-adding-keywords). *Leaving this unchecked will still allow you to use keywords with the command.*
 
 - `Target Name` is the name of the target node. The name has to be an exact match otherwise the command will not work. Optionally this field can be left empty which will directly reference the console window.
 
 - `Target Method` is the method, i.e., function which will be called from the target node. This as well has to be an exact match otherwise the command will not work.
 
-- `Command Arguments` is the list of arguments for the command. These correspond to the arguments of the target method. Arguments are also stored sequentually so the order has to be the same as the order in the target method. Each argument also has three fields:
-  - **Argument Name** is purely visual and does not have to match what is in the target method. It can also be left empty, however I advise againts doing so as it can be used as a short descriptor of what the argument is used for.
-  - **Argument Type** is the type of value the argument expects. Currently the support types are: String, Int, Float, Bool and Vector2/3 as well as their Int only counterparts. Vectors are constructed with parenthesis and the values are separated via a comma. Whitespace is not ignored inside of a Vector so **(1, 2)** would be counted as two separate arguments.
-  - **Optional** is a toggle to make the argument optional. When making an argument optional you also have to assign a default value to the corresponding argument inside of the target method.
 
 ## Adding/Editing commands
 
 To create a new command, you first have to have the `<new>` optional selected from the `Command List`. Afterwhich you can fill out the rest of the fields as explained before. Once you are done, you can pressed the `Add Command` button at the bottom.
+
+*As of `v1.3.0`, command arguments are retrived dynamically from the target method. This is so one command can be used to call the same method on different objects with the help of keywords. Methods that have arguments with unsupported types will not work. [List of support types](../README.md#current-features)*
 
 To edit an existing command, you can select the command you wish to edit from the `Command List`. Once doing so, the rest of the fields will be filled with the information corresponding to the selected command. After you have tweaked the command you can finalize the edit by pressing the `Edit Command` button, alternatively if you wish to completely delete the command you can press the `Remove Command` button.
 
