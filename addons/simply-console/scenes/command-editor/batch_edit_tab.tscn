@@ -14,8 +14,6 @@ signal changes_made
 @onready var TargetNameRef: LineEdit = %TargetName
 @onready var SelectButtonRef: Button = %SelectAll
 
-var updatedCommandList: bool = false
-
 
 func init_batch_edit() -> void:
 	update_command_list()
@@ -65,7 +63,6 @@ func on_remove_commands_pressed() -> void:
 		ConsoleDataManager.COMMAND_LIST_.erase(CommandListRef.get_item_text(i))
 	
 	update_command_list()
-	updatedCommandList = true
 	emit_signal(\"changes_made\")
 
 

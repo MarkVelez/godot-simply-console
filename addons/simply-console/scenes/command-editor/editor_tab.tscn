@@ -24,8 +24,6 @@ signal changes_made
 @onready var CommandNameWarningRef: Label = %CommandNameWarning
 @onready var TargetMethodWarningRef: Label = %TargetMethodWarning
 
-var updatedCommandList: bool = false
-
 
 func init_editor() -> void:
 	update_command_list()
@@ -122,7 +120,6 @@ func on_update_command_pressed() -> void:
 	# Clear input fields
 	CommandListRef.select(0)
 	on_command_list_item_selected(0)
-	updatedCommandList = true
 	emit_signal(\"changes_made\")
 
 
@@ -165,7 +162,6 @@ func on_remove_command_pressed() -> void:
 		CommandListRef.get_item_text(CommandListRef.selected)
 	)
 	
-	updatedCommandList = true
 	CommandListRef.remove_item(CommandListRef.selected)
 	CommandListRef.select(0)
 	on_command_list_item_selected(0)
