@@ -59,8 +59,8 @@ func _input(event: InputEvent) -> void:
 	
 	# Move up in command history
 	if event.pressed and event.keycode == KEY_UP:
-		if historyPosition < commandHistory_.size() - 1:
-			historyPosition += 1
+		if historyPosition > 0:
+			historyPosition -= 1
 		InputFieldRef.set_text(commandHistory_[historyPosition])
 		InputFieldRef.set_caret_column(
 			commandHistory_[historyPosition].length()
@@ -69,8 +69,11 @@ func _input(event: InputEvent) -> void:
 	
 	# Move down in command history
 	if event.pressed and event.keycode == KEY_DOWN:
-		if historyPosition > 0:
+		if historyPosition == commandHistory_.size():
 			historyPosition -= 1
+		
+		if historyPosition < commandHistory_.size() - 1:
+			historyPosition += 1
 		InputFieldRef.set_text(commandHistory_[historyPosition])
 		InputFieldRef.set_caret_column(
 			commandHistory_[historyPosition].length()
@@ -100,7 +103,7 @@ func on_input_field_text_submitted(text: String) -> void:
 	text = escape_bbcode(text)
 	update_command_history(text)
 	
-	# Separate the command name and the arguments
+	# Process input text
 	var processedText_: Dictionary =\
 		CommandLexerRef.process_input_text(text)
 	var response: String =\
@@ -130,7 +133,7 @@ func update_command_history(text: String) -> void:
 	if commandHistory_.size() > MAX_COMMAND_HISTORY:
 		commandHistory_.remove_at(0)
 	
-	historyPosition = commandHistory_.size() - 1
+	historyPosition = commandHistory_.size()
 
 
 #region Print methods
