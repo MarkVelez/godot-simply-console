@@ -4,6 +4,8 @@ extends PanelContainer
 
 # Object references
 @onready var ConsoleWindowRef: Window = owner
+@onready var ParserRef: CommandParser = ConsoleWindowRef.CommandParserRef
+@onready var LexerRef: CommandLexer = ConsoleWindowRef.CommandLexerRef
 @onready var SuggestionListRef: VBoxContainer = %SuggestionList
 @onready var IndicatorRef: TextureRect = %OverflowIndicator
 @onready var InputFieldRef: LineEdit = %InputField
@@ -12,8 +14,9 @@ extends PanelContainer
 const MAX_SUGGESTIONS: int = 5
 
 # Suggestion caches
-var currentSuggestions_: Array[String]
-var overflowSuggestions_: Array[String]
+var currentSuggestions_: Array[Dictionary]
+var overflowSuggestions_: Array[Dictionary]
+var processedText_: Dictionary = {}
 
 var selectedIdx: int = MAX_SUGGESTIONS - 1
 
@@ -24,7 +27,7 @@ var isMouseInside: bool = false
 
 func _ready() -> void:
 	# Populate suggestion list
-	for i in range(0, MAX_SUGGESTIONS):
+	for i in range(MAX_SUGGESTIONS):
 		var SuggestionRef: RichTextLabel = SuggestionScene.instantiate()
 		SuggestionRef.set_name("Suggestion" + str(i))
 		SuggestionRef.hide()
@@ -48,9 +51,13 @@ func dismiss_suggestions() -> void:
 
 
 ## Inserts the suggestion into the input field.
-func insert_suggestion(suggestion) -> void:
-	InputFieldRef.set_text(suggestion)
-	dismiss_suggestions()
+func insert_suggestion(suggestion: String) -> void:
+	# Ignore arguments when copying
+	var command: String = suggestion.substr(0, suggestion.find("("))
+	InputFieldRef.set_text(command)
+	on_input_field_text_changed(command)
+	InputFieldRef.grab_focus()
+	InputFieldRef.set_caret_column(InputFieldRef.text.length())
 
 
 #region Flag toggling
@@ -136,7 +143,7 @@ func _input(event: InputEvent) -> void:
 		# Move along the overflow suggestions
 		overflowSuggestions_.push_front(currentSuggestions_.pop_back())
 		currentSuggestions_.push_front(overflowSuggestions_.pop_back())
-		update_all(InputFieldRef.get_text())
+		update_all()
 		ViewportRef.set_input_as_handled()
 	
 	# Move downwards in the suggestion list when the down button is pressed
@@ -171,7 +178,7 @@ func _input(event: InputEvent) -> void:
 		# Move along the overflow suggestions
 		overflowSuggestions_.push_back(currentSuggestions_.pop_front())
 		currentSuggestions_.append(overflowSuggestions_.pop_front())
-		update_all(InputFieldRef.get_text())
+		update_all()
 		ViewportRef.set_input_as_handled()
 	
 	# Check if the suggestions are currently being selected
@@ -199,39 +206,60 @@ func on_input_field_text_changed(text: String) -> void:
 	if suggestionsDismissed:
 		return
 	
+	# Process input text
+	processedText_ = LexerRef.process_input_text(text, true)
+	var commandName: String = processedText_["command"]
+	
 	# Check for valid suggestions
 	for command in ConsoleDataManager.COMMAND_LIST_:
-		if command in currentSuggestions_ or command in overflowSuggestions_:
+		if matching_command(command):
 			continue
 		
-		if command.begins_with(text):
+		if command.begins_with(commandName):
+			var target: Node = ParserRef.get_command_target(command)
+			if not target:
+				continue
+			
+			var args: Array[Dictionary] =\
+				ParserRef.get_method_arguments(
+					target,
+					ConsoleDataManager.COMMAND_LIST_[command]["method"]
+				)
+			
 			if currentSuggestions_.size() < MAX_SUGGESTIONS:
-				currentSuggestions_.append(command)
+				currentSuggestions_.append({
+					"command": command,
+					"args": args
+				})
 			else:
-				overflowSuggestions_.append(command)
+				overflowSuggestions_.append({
+					"command": command,
+					"args": args
+				})
 	
 	if currentSuggestions_.is_empty():
 		return
 	
 	# Filter our invalid overflow suggestions and then sort the overflow list
 	overflowSuggestions_ =\
-		overflowSuggestions_.filter(filter_suggestions.bind(text))
+		overflowSuggestions_.filter(filter_suggestions)
 	overflowSuggestions_.sort_custom(sort_suggestions)
 	
-	var invalidSuggestions_: PackedStringArray = []
+	var invalidSuggestions_: Array[Dictionary] = []
 	# Filter out invalid suggestions and replace them if there overflow ones
-	for command in currentSuggestions_:
+	for entry_ in currentSuggestions_:
 		var SuggestionRef: RichTextLabel =\
-			SuggestionListRef.get_child(currentSuggestions_.find(command))
-		if not command.begins_with(text):
+			SuggestionListRef.get_child(currentSuggestions_.find(entry_))
+		
+		if not filter_suggestions(entry_):
 			if not overflowSuggestions_.is_empty():
-				var newCommand: String = overflowSuggestions_.pop_back()
+				var newCommand: Dictionary = overflowSuggestions_.pop_back()
 				currentSuggestions_[
-					currentSuggestions_.find(command)
+					currentSuggestions_.find(entry_)
 				] = newCommand
 			else:
 				SuggestionRef.hide()
-				invalidSuggestions_.append(command)
+				invalidSuggestions_.append(entry_)
 	
 	# Remove invalid suggestions
 	for command in invalidSuggestions_:
@@ -244,11 +272,11 @@ func on_input_field_text_changed(text: String) -> void:
 	
 	# Sort the visible suggestions and update the UI
 	currentSuggestions_.sort_custom(sort_suggestions)
-	update_all(text)
+	update_all()
 
 
 ## Updates an individual suggestion in the suggestion list.
-func update_suggestion(command: String, text: String) -> void:
+func update_suggestion(entry_: Dictionary) -> void:
 	# Check suggestion list visibility
 	if not is_visible_in_tree():
 		for i in range(MAX_SUGGESTIONS):
@@ -256,22 +284,64 @@ func update_suggestion(command: String, text: String) -> void:
 		suggestionsDismissed = false
 		show()
 	
-	# Update command
 	var SuggestionRef: RichTextLabel =\
-		SuggestionListRef.get_child(currentSuggestions_.find(command))
+		SuggestionListRef.get_child(currentSuggestions_.find(entry_))
 	SuggestionRef.show()
 	SuggestionRef.clear()
+	
+	# Update command
 	SuggestionRef.push_color(Color.YELLOW)
-	SuggestionRef.append_text(text)
+	SuggestionRef.append_text(processedText_["command"])
 	SuggestionRef.pop()
-	SuggestionRef.append_text(command.substr(text.length()))
+	SuggestionRef.append_text(
+		entry_["command"].substr(processedText_["command"].length())
+	)
+	
+	# Check for arguments
+	if processedText_["arguments"].is_empty() and entry_["args"].is_empty():
+		return
+	
+	# Update arguments
+	SuggestionRef.append_text("(")
+	for i in range(entry_["args"].size()):
+		if processedText_["arguments"].size() - 1 == i:
+			SuggestionRef.push_bgcolor(Color(Color.WHITE, 0.1))
+		
+		var arg_: Dictionary = entry_["args"][i]
+		SuggestionRef.append_text(
+				"[color=PALE_TURQUOISE]"
+				+ arg_["name"]
+				+ "[/color]"
+				+ ": [color=MEDIUM_SPRING_GREEN]"
+				+ type_string(arg_["type"])
+				+ "[/color]"
+			)
+		
+		if arg_["default"] != null:
+			var default: String = str(arg_["default"])
+			if arg_["type"] == TYPE_STRING and arg_["default"].is_empty():
+				default = "\"\""
+			SuggestionRef.append_text(
+				" = "
+				+ "[color=SANDY_BROWN]"
+				+ default
+				+ "[/color]"
+			)
+		
+		if processedText_["arguments"].size() - 1 == i:
+			SuggestionRef.pop()
+		
+		if entry_["args"].find(arg_) != entry_["args"].size() - 1:
+			SuggestionRef.append_text(", ")
+	
+	SuggestionRef.append_text(")")
 
 
 ## Updates all suggestions in the suggestion list.
-func update_all(text: String) -> void:
+func update_all() -> void:
 	for i in range(MAX_SUGGESTIONS):
 		if i < currentSuggestions_.size():
-			update_suggestion(currentSuggestions_[i], text)
+			update_suggestion(currentSuggestions_[i])
 		else:
 			SuggestionListRef.get_child(i).hide()
 
@@ -279,13 +349,40 @@ func update_all(text: String) -> void:
 ## Sorts the suggestions based on length in descending order
 ## then in descending alphanumerical order.
 ## This puts the most relevant suggestion to the bottom of the list.
-func sort_suggestions(a: String, b: String) -> bool:
-	if a.length() != b.length():
-		return a.length() > b.length()
-	return a > b
+func sort_suggestions(a_: Dictionary, b_: Dictionary) -> bool:
+	var aCmd: String = a_["command"]
+	var bCmd: String = b_["command"]
+	if aCmd.length() != bCmd.length():
+		return aCmd.length() > bCmd.length()
+	return aCmd > bCmd
 
 
 ## Filters out invalid suggestions.
-func filter_suggestions(command: String, text: String) -> bool:
-	return command.begins_with(text)
+func filter_suggestions(entry_: Dictionary) -> bool:
+	if entry_["command"].begins_with(processedText_["command"]):
+		if (
+			entry_["command"] != processedText_["command"]
+			and not processedText_["arguments"].is_empty()
+		):
+			return false
+		
+		if processedText_["arguments"].size() > entry_["args"].size():
+			return false
+		
+		return true
+	
+	return false
 #endregion
+
+
+## Checks if a command is already suggested.
+func matching_command(command: String) -> bool:
+	for entry in currentSuggestions_:
+		if entry["command"] == command:
+			return true
+		
+	for entry in overflowSuggestions_:
+		if entry["command"] == command:
+			return true
+	
+	return false

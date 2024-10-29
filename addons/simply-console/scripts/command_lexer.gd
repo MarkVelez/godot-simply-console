@@ -10,14 +10,14 @@ class_name CommandLexer
 
 
 ## Processes the provided text for the parser to use.
-func process_input_text(text: String) -> Dictionary:
+func process_input_text(text: String, partial: bool = false) -> Dictionary:
 	var processedText_: Dictionary = {
 		"command": "",
 		"arguments": [],
 		"keyword": ""
 	}
-	# Ignore leading and trailing whitespace
-	text = text.strip_edges()
+	# Ignore leading whitespace
+	text = text.strip_edges(true, false)
 	var next: int = text.find(" ")
 	var previous: int = next
 	
@@ -29,12 +29,23 @@ func process_input_text(text: String) -> Dictionary:
 	
 	# Get the remaining arguments
 	while next != -1:
+		if next + 1 == text.length():
+			if partial:
+				processedText_["arguments"].append(null)
+			return processedText_
+		
 		# Check the next character
 		match text[next + 1]:
 			# Extract the contents of long strings which are in quotes
 			"\"":
 				var start: int = next + 2
 				var end: int = text.find("\"", start)
+				
+				if end == -1:
+					if partial:
+						processedText_["arguments"].append(null)
+					return processedText_
+				
 				processedText_["arguments"].append(
 					text.substr(start, end - start)
 				)
@@ -43,6 +54,12 @@ func process_input_text(text: String) -> Dictionary:
 			"(":
 				var start: int = next + 1
 				var end: int = text.find(")", start)
+				
+				if end == -1:
+					if partial:
+						processedText_["arguments"].append(null)
+					return processedText_
+				
 				var content: String = text.substr(start, end - start + 1)
 				content = content.replace(" ", "")
 				processedText_["arguments"].append(content)
@@ -51,8 +68,10 @@ func process_input_text(text: String) -> Dictionary:
 			_:
 				var start: int = next + 1
 				var end: int = text.find(" ", start)
+				
 				if end == -1:
 					end = text.length()
+				
 				processedText_["arguments"].append(
 					text.substr(start, end - start)
 				)

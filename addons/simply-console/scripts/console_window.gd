@@ -8,8 +8,6 @@ extends Window
 # Console node references.
 @onready var OutputFieldRef: RichTextLabel = %OutputField
 @onready var InputFieldRef: LineEdit = %InputField
-@onready var CommandParserRef: CommandParser = $CommandParser
-@onready var CommandLexerRef: CommandLexer = $CommandLexer
 @onready var SuggestionsRef: PanelContainer = %CommandSuggestions
 
 # Response limits
@@ -19,9 +17,23 @@ const MAX_CHAR_COUNT: int = 8192
 # Command history limit
 const MAX_COMMAND_HISTORY: int = 16
 
+# Command processor references
+var CommandParserRef: CommandParser
+var CommandLexerRef: CommandLexer
+
 # Command history variables
 var commandHistory_: PackedStringArray
 var historyPosition: int = 0
+
+
+func _enter_tree() -> void:
+	CommandParserRef = CommandParser.new()
+	add_child(CommandParserRef)
+	CommandParserRef.set_owner(self)
+	
+	CommandLexerRef = CommandLexer.new()
+	add_child(CommandLexerRef)
+	CommandLexerRef.set_owner(self)
 
 
 func _ready() -> void:
@@ -212,7 +224,7 @@ func clear_console() -> void:
 	OutputFieldRef.clear()
 
 
-func toggle_cheats(state: bool = cheatsEnabled) -> String:
+func toggle_cheats(state: bool) -> String:
 	if state == cheatsEnabled:
 		return "Cheats are currently " + ("enabled." if state else "disabled.")
 	
