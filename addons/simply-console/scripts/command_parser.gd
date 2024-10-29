@@ -66,7 +66,10 @@ func parse_command(
 			+ "." 
 		)
 	
-	if not methodArguments_.is_empty() and arguments_.is_empty():
+	if (
+		not methodArguments_.is_empty()
+		and arguments_.size() < methodArguments_.size()
+	):
 		return (
 			"Too few arguments for command '"
 			+ command
@@ -111,6 +114,7 @@ func get_command_target(command: String, keyword: String = "") -> Node:
 		var NodeRef: Node = get_node_or_null("/root/" + target)
 		if NodeRef == null:
 			return get_tree().root.find_child(target, true , false)
+		return NodeRef
 	else:
 		if ConsoleDataManager.keywordList_.has(keyword):
 			return ConsoleDataManager.keywordList_[keyword]
@@ -133,15 +137,15 @@ func get_method_arguments(
 	var argumentList_: Array[Dictionary] = []
 	for i in range(methodArguments_.size()):
 		var argument: Dictionary = methodArguments_[i]
-		var isOptional: bool = false
+		var default = null
 		
 		if i >= methodArguments_.size() - defaultValues_.size():
-			isOptional = true
+			default = defaultValues_[i - defaultValues_.size()]
 		
 		argumentList_.append({
 			"name": argument["name"],
 			"type": argument["type"],
-			"optional": isOptional
+			"default": default
 		})
 	
 	return argumentList_
@@ -149,7 +153,7 @@ func get_method_arguments(
 
 ## Checks if the target method's arguments are supported.
 func validate_method_arguments(methodArguments_: Array[Dictionary]) -> bool:
-	var VALID_TYPES_: Array = [
+	const VALID_TYPES_: PackedInt32Array = [
 		TYPE_STRING,
 		TYPE_INT,
 		TYPE_FLOAT,
@@ -187,7 +191,7 @@ func arguments_optional(
 		return true
 	
 	for argument_ in methodArguments_:
-		if not argument_["optional"]:
+		if argument_["default"] == null:
 			return false
 	
 	return true
