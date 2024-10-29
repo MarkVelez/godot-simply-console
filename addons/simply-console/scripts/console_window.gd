@@ -201,20 +201,36 @@ func show_command_list(filter: String = "") -> String:
 		
 		return "Target for '" + filter + "' could not be found."
 	
-	var argumentList_: Array[Dictionary] =\
+	var argList_: Array[Dictionary] =\
 		CommandParserRef.get_method_arguments(
 			TargetRef,
 			COMMAND_LIST_[filter]["method"]
 		)
-	if argumentList_.is_empty():
+	if argList_.is_empty():
 		return "Command '" + filter + "' does not have any arguments."
 	
 	response = "Argument(s) for '" + filter + "':\n"
-	for argument_ in argumentList_:
-		response += argument_["name"]
-		response += " : " + type_string(argument_["type"])
-		if argument_["optional"]:
-			response += " (optional)"
+	for arg_ in argList_:
+		response += (
+			"[color=PALE_TURQUOISE]"
+			+ arg_["name"]
+			+ "[/color]"
+			+ ": [color=MEDIUM_SPRING_GREEN]"
+			+ type_string(arg_["type"])
+			+ "[/color]"
+		)
+		
+		if arg_["default"] != null:
+			var default: String = str(arg_["default"])
+			if arg_["type"] == TYPE_STRING and arg_["default"].is_empty():
+				default = "\"\""
+			response += (
+				" = "
+				+ "[color=SANDY_BROWN]"
+				+ default
+				+ "[/color]"
+			)
+		
 		response += "\n"
 	
 	return response.trim_suffix("\n")
