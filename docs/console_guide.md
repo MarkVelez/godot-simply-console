@@ -26,7 +26,7 @@ The console comes with three build in commands:
 
 - `clear` clears the console window.
 
-- `cheats` lets you toggle cheats by passing **true** or **false** as an argument. Optionally it can be used without an argument to show if cheats are enabled or not. *By default this command has no access restriction.*
+- `cheats` lets you toggle cheats by passing **true** or **false** as an argument. *By default this command has no access restriction.*
 
 If you want to add custom commands, refer to the [Command Editor](command_editor_guide.md) guide.
 

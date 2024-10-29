@@ -17,7 +17,6 @@ const MAX_SUGGESTIONS: int = 5
 var currentSuggestions_: Array[Dictionary]
 var overflowSuggestions_: Array[Dictionary]
 var processedText_: Dictionary = {}
-
 var selectedIdx: int = MAX_SUGGESTIONS - 1
 
 # Flags
@@ -209,33 +208,39 @@ func on_input_field_text_changed(text: String) -> void:
 	# Process input text
 	processedText_ = LexerRef.process_input_text(text, true)
 	var commandName: String = processedText_["command"]
+	var keyword: String = processedText_["keyword"]
 	
-	# Check for valid suggestions
-	for command in ConsoleDataManager.COMMAND_LIST_:
-		if matching_command(command):
-			continue
-		
-		if command.begins_with(commandName):
-			var target: Node = ParserRef.get_command_target(command)
-			if not target:
+	# Handle command that is a valid keyword
+	if (
+		keyword.is_empty()
+		and ConsoleDataManager.keywordList_.has(commandName)
+	):
+		processedText_["keyword"] = commandName
+		keyword = commandName
+		processedText_["command"] = ""
+		commandName = ""
+	
+	# Handle keyword with no command
+	if (
+		not keyword.is_empty()
+		and commandName.is_empty()
+		and ConsoleDataManager.keywordList_.has(keyword)
+	):
+		var commandList_: Array[String] = get_target_commands(
+			ConsoleDataManager.keywordList_[keyword]
+		)
+		for command in commandList_:
+			if matching_command(command):
+				continue
+			add_suggestion(command, keyword)
+	else:
+		# Check for valid suggestions
+		for command in ConsoleDataManager.COMMAND_LIST_:
+			if matching_command(command):
 				continue
 			
-			var args: Array[Dictionary] =\
-				ParserRef.get_method_arguments(
-					target,
-					ConsoleDataManager.COMMAND_LIST_[command]["method"]
-				)
-			
-			if currentSuggestions_.size() < MAX_SUGGESTIONS:
-				currentSuggestions_.append({
-					"command": command,
-					"args": args
-				})
-			else:
-				overflowSuggestions_.append({
-					"command": command,
-					"args": args
-				})
+			if command.begins_with(commandName):
+				add_suggestion(command, keyword)
 	
 	if currentSuggestions_.is_empty():
 		return
@@ -253,10 +258,10 @@ func on_input_field_text_changed(text: String) -> void:
 		
 		if not filter_suggestions(entry_):
 			if not overflowSuggestions_.is_empty():
-				var newCommand: Dictionary = overflowSuggestions_.pop_back()
+				var newCommand_: Dictionary = overflowSuggestions_.pop_back()
 				currentSuggestions_[
 					currentSuggestions_.find(entry_)
-				] = newCommand
+				] = newCommand_
 			else:
 				SuggestionRef.hide()
 				invalidSuggestions_.append(entry_)
@@ -289,6 +294,12 @@ func update_suggestion(entry_: Dictionary) -> void:
 	SuggestionRef.show()
 	SuggestionRef.clear()
 	
+	if not processedText_["keyword"].is_empty():
+		SuggestionRef.push_color(Color.RED)
+		SuggestionRef.append_text(processedText_["keyword"])
+		SuggestionRef.pop()
+		SuggestionRef.append_text(".")
+	
 	# Update command
 	SuggestionRef.push_color(Color.YELLOW)
 	SuggestionRef.append_text(processedText_["command"])
@@ -298,7 +309,7 @@ func update_suggestion(entry_: Dictionary) -> void:
 	)
 	
 	# Check for arguments
-	if processedText_["arguments"].is_empty() and entry_["args"].is_empty():
+	if entry_["args"].is_empty():
 		return
 	
 	# Update arguments
@@ -359,6 +370,17 @@ func sort_suggestions(a_: Dictionary, b_: Dictionary) -> bool:
 
 ## Filters out invalid suggestions.
 func filter_suggestions(entry_: Dictionary) -> bool:
+	# Keyword with no command filtering
+	if (
+		not processedText_["keyword"].is_empty()
+		and processedText_["command"].is_empty()
+		and ConsoleDataManager.keywordList_.has(processedText_["keyword"])
+	):
+		return ConsoleDataManager.keywordList_[
+				processedText_["keyword"]
+			].has_method(entry_["command"])
+	
+	# Normal command filtering
 	if entry_["command"].begins_with(processedText_["command"]):
 		if (
 			entry_["command"] != processedText_["command"]
@@ -372,7 +394,6 @@ func filter_suggestions(entry_: Dictionary) -> bool:
 		return true
 	
 	return false
-#endregion
 
 
 ## Checks if a command is already suggested.
@@ -386,3 +407,47 @@ func matching_command(command: String) -> bool:
 			return true
 	
 	return false
+
+
+## Returns an array of all the commands that are associated with the target.
+func get_target_commands(TargetRef: Node) -> Array[String]:
+	var commandList_: Array[String] = []
+	if not TargetRef:
+		return commandList_
+	
+	for command in ConsoleDataManager.COMMAND_LIST_:
+		var method: String =\
+			ConsoleDataManager.COMMAND_LIST_[command]["method"]
+		if TargetRef.has_method(method):
+			commandList_.append(command)
+	
+	return commandList_
+
+
+## Adds the provided command to the appropriate suggestions array.
+func add_suggestion(command: String, keyword: String) -> void:
+	var TargetRef: Node = ParserRef.get_command_target(command, keyword)
+	if not TargetRef:
+		return
+	
+	var method: String = ConsoleDataManager.COMMAND_LIST_[command]["method"]
+	if not TargetRef.has_method(method):
+		return
+	
+	var args: Array[Dictionary] =\
+		ParserRef.get_method_arguments(
+			TargetRef,
+			method
+		)
+	
+	if currentSuggestions_.size() < MAX_SUGGESTIONS:
+		currentSuggestions_.append({
+			"command": command,
+			"args": args
+		})
+	else:
+		overflowSuggestions_.append({
+			"command": command,
+			"args": args
+		})
+#endregion
