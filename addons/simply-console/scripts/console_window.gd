@@ -161,24 +161,39 @@ func output_comment(text: String) -> void:
 func show_command_list(filter: String = "") -> String:
 	var response: String = "List of available commands:\n"
 	var COMMAND_LIST_: Dictionary = ConsoleDataManager.COMMAND_LIST_
+	var keywordList_: Dictionary = ConsoleDataManager.keywordList_
+	var isKeywordFilter: bool = keywordList_.has(filter)
 	
 	# Show list of commands
-	if filter == "":
-		for command in COMMAND_LIST_:
+	if filter == "" or isKeywordFilter:
+		var commandList_: Array = COMMAND_LIST_.keys()
+		# Check if filter is a keyword
+		if isKeywordFilter:
+			if not keywordList_[filter]:
+				return "Keyword '" + filter + "' holds no reference."
+			
+			response = (
+				"List of available commands for '"
+				+ keywordList_[filter].get_name()
+				+ "':\n"
+			)
+			commandList_ =\
+				SuggestionsRef.get_target_commands(keywordList_[filter])
+		
+		for command in commandList_:
+			var commandInfo_: Dictionary = COMMAND_LIST_[command]
 			# Only show accessible commands
 			if (
-				permissionLevel >= COMMAND_LIST_[command]["minPermission"]
-				and int(cheatsEnabled) >= int(COMMAND_LIST_[command]["cheats"])
+				permissionLevel < commandInfo_["minPermission"]
+				or cheatsEnabled < commandInfo_["cheats"]
+				or not isKeywordFilter
+				and commandInfo_["requiresKeyword"]
 			):
-				response += command + ", "
+				continue
+			
+			response += command + ", "
 		
 		return response.trim_suffix(", ")
-	
-	# Check for keyword
-	var keyword: String = ""
-	if filter.contains("."):
-		keyword = filter.substr(0, filter.find("."))
-		filter = filter.substr(keyword.length() + 1)
 	
 	# Check if filter command exists
 	if not COMMAND_LIST_.has(filter):
@@ -191,6 +206,12 @@ func show_command_list(filter: String = "") -> String:
 	# Check cheats requirement
 	if cheatsEnabled < COMMAND_LIST_[filter]["cheats"]:
 		return "Cheats are required for command '" + filter + "'."
+	
+	# Check for keyword
+	var keyword: String = ""
+	if filter.contains("."):
+		keyword = filter.substr(0, filter.find("."))
+		filter = filter.substr(keyword.length() + 1)
 	
 	# Show list of arguments for command
 	var TargetRef: Node =\
