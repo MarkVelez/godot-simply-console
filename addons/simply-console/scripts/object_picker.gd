@@ -6,7 +6,7 @@ class_name ObjectPicker
 ## [b]Note:[/b] The object picker requires that the scene has an active camera.
 
 ## Reference to the console window.
-@export var ConsoleRef: Window
+var ConsoleRef: Window = null
 
 ## Fixed scene type for the object picker.[br]
 ## This can be set to skip needing to determine the current scene type.
@@ -24,8 +24,12 @@ var sceneType: String
 
 
 func _ready() -> void:
+	ConsoleRef = Console.ConsoleRef
+	if not ConsoleRef:
+		assert(false, "Could not find console window.")
+	
 	ConsoleRef.connect("visibility_changed", on_visibility_changed)
-	ConsoleDataManager.keywordList_["this"] = null
+	Console.keywordList_["this"] = null
 
 
 func _input(event: InputEvent) -> void:
@@ -46,7 +50,7 @@ func _input(event: InputEvent) -> void:
 			"Selected Object: " + str(SelectedRef)
 			+ "\nUse keyword 'this' to access reference."
 		)
-		ConsoleDataManager.keywordList_["this"] = SelectedRef
+		Console.keywordList_["this"] = SelectedRef
 		get_viewport().set_input_as_handled()
 
 

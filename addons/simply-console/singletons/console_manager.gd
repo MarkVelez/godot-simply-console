@@ -6,6 +6,9 @@ enum PermissionLevel {
 	NONE,
 }
 
+# Change this to 'false' if you want instanced consoles.
+const GLOBAL_CONSOLE: bool = true
+
 # Command list file location constants
 const FILE: String = "command_list.json"
 const DIRECTORY: String = "res://addons/simply-console/data/"
@@ -13,6 +16,24 @@ const PATH: String = DIRECTORY + FILE
 
 var COMMAND_LIST_: Dictionary
 var keywordList_: Dictionary
+
+# Reference to the console window
+var ConsoleRef: Window = null
+
+
+func _enter_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+	
+	if not GLOBAL_CONSOLE:
+		return
+	
+	var ConsoleScene: PackedScene = load(
+		"res://addons/simply-console/scenes/console-window/console_window.tscn"
+	)
+	var InstanceRef = ConsoleScene.instantiate()
+	add_child(InstanceRef)
+	InstanceRef.set_owner(self)
 
 
 func _ready() -> void:
@@ -73,3 +94,21 @@ func get_data() -> void:
 	if COMMAND_LIST_ == null:
 		push_error("Failed to parse command list file.")
 		return
+
+
+#region Print methods
+func output_text(text: String, color := Color.WHITE) -> void:
+	ConsoleRef.output_text(text, color)
+
+
+func output_warning(text: String) -> void:
+	ConsoleRef.output_warning(text)
+
+
+func output_error(text: String) -> void:
+	ConsoleRef.output_error(text)
+
+
+func output_comment(text: String) -> void:
+	ConsoleRef.output_comment(text)
+#endregion

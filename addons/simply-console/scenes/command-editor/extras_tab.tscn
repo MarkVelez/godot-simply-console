@@ -21,7 +21,7 @@ func on_validate_pressed() -> void:
 
 
 func validate_command_list(VALID_COMMAND_: Dictionary) -> void:
-	var COMMAND_LIST_: Dictionary = ConsoleDataManager.COMMAND_LIST_
+	var COMMAND_LIST_: Dictionary = Console.COMMAND_LIST_
 	
 	for commandName in COMMAND_LIST_:
 		var command_: Dictionary = COMMAND_LIST_[commandName]
@@ -62,9 +62,8 @@ func validate_command_list(VALID_COMMAND_: Dictionary) -> void:
 
 
 func on_restore_pressed() -> void:
-	var BUILT_IN_COMMANDS_: Dictionary =\\
-		ConsoleDataManager.get_built_in_commands()
-	var COMMAND_LIST_: Dictionary = ConsoleDataManager.COMMAND_LIST_
+	var BUILT_IN_COMMANDS_: Dictionary = Console.get_built_in_commands()
+	var COMMAND_LIST_: Dictionary = Console.COMMAND_LIST_
 	
 	for command in BUILT_IN_COMMANDS_:
 		if not COMMAND_LIST_.has(command):
@@ -74,9 +73,8 @@ func on_restore_pressed() -> void:
 
 
 func on_reset_pressed() -> void:
-	ConsoleDataManager.COMMAND_LIST_.clear()
-	ConsoleDataManager.COMMAND_LIST_ =\\
-		ConsoleDataManager.get_built_in_commands()
+	Console.COMMAND_LIST_.clear()
+	Console.COMMAND_LIST_ = Console.get_built_in_commands()
 	emit_signal(\"changes_made\")
 "
 

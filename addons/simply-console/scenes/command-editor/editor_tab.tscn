@@ -29,7 +29,7 @@ func init_editor() -> void:
 	update_command_list()
 	
 	# Add permission levels to option button
-	for permission in ConsoleDataManager.PermissionLevel:
+	for permission in Console.PermissionLevel:
 		PermissionRef.add_item(permission)
 
 
@@ -44,7 +44,7 @@ func on_command_list_item_selected(index: int) -> void:
 	# Existing command selected
 	var commandName: String = CommandListRef.get_item_text(index)
 	CommandNameRef.set_text(commandName)
-	update_fields(ConsoleDataManager.COMMAND_LIST_[commandName])
+	update_fields(Console.COMMAND_LIST_[commandName])
 	UpdateCommandRef.set_text(\"Edit Command\")
 	RemoveCommandRef.show()
 
@@ -53,7 +53,7 @@ func update_command_list() -> void:
 	CommandListRef.clear()
 	CommandListRef.add_item(\"<new>\")
 	
-	for command in ConsoleDataManager.COMMAND_LIST_.keys():
+	for command in Console.COMMAND_LIST_.keys():
 		CommandListRef.add_item(command)
 
 
@@ -83,9 +83,8 @@ func on_update_command_pressed() -> void:
 	var commandName: String = CommandNameRef.get_text()
 	
 	# Update existing command
-	if ConsoleDataManager.COMMAND_LIST_.has(commandName):
-		var commandInfo_: Dictionary =\\
-			ConsoleDataManager.COMMAND_LIST_[commandName]
+	if Console.COMMAND_LIST_.has(commandName):
+		var commandInfo_: Dictionary = Console.COMMAND_LIST_[commandName]
 		
 		commandInfo_[\"target\"] = TargetNameRef.get_text()
 		commandInfo_[\"minPermission\"] = PermissionRef.get_selected()
@@ -101,13 +100,12 @@ func on_update_command_pressed() -> void:
 	# Add new command
 	var commandListName: String =\\
 		CommandListRef.get_item_text(CommandListRef.selected)
-	ConsoleDataManager.COMMAND_LIST_[commandName] = {}
-	var newCommand_: Dictionary =\\
-		ConsoleDataManager.COMMAND_LIST_[commandName]
+	Console.COMMAND_LIST_[commandName] = {}
+	var newCommand_: Dictionary = Console.COMMAND_LIST_[commandName]
 	
 	# Check if the command name was changed on an existing command
-	if ConsoleDataManager.COMMAND_LIST_.has(commandListName):
-		ConsoleDataManager.COMMAND_LIST_.erase(commandListName)
+	if Console.COMMAND_LIST_.has(commandListName):
+		Console.COMMAND_LIST_.erase(commandListName)
 		CommandListRef.remove_item(CommandListRef.selected)
 	
 	CommandListRef.add_item(commandName)
@@ -131,7 +129,7 @@ func validate_data() -> bool:
 	
 	# Check if command name already exist
 	if (
-		ConsoleDataManager.COMMAND_LIST_.has(commandName)
+		Console.COMMAND_LIST_.has(commandName)
 		and commandName != commandListName
 	):
 		CommandNameWarningRef.set_text(\"Command already exists.\")
@@ -158,7 +156,7 @@ func validate_data() -> bool:
 
 
 func on_remove_command_pressed() -> void:
-	ConsoleDataManager.COMMAND_LIST_.erase(
+	Console.COMMAND_LIST_.erase(
 		CommandListRef.get_item_text(CommandListRef.selected)
 	)
 	

@@ -8,30 +8,30 @@ func parse_command(
 	command: String,
 	arguments_: Array,
 	keyword: String,
-	permission: ConsoleDataManager.PermissionLevel,
+	permission: Console.PermissionLevel,
 	cheatsEnabled: bool
 ) -> String:
-	if not ConsoleDataManager.COMMAND_LIST_.has(command):
+	if not Console.COMMAND_LIST_.has(command):
 		return "Command '" + command + "' does not exist."
 	
-	if keyword and not ConsoleDataManager.keywordList_.has(keyword):
+	if keyword and not Console.keywordList_.has(keyword):
 		return "Keyword '" + keyword + "' does not exist."
 	
-	if not cheatsEnabled and ConsoleDataManager.COMMAND_LIST_[command]["cheats"]:
+	if not cheatsEnabled and Console.COMMAND_LIST_[command]["cheats"]:
 		return "Command requires cheats to be enabled."
 	
-	if permission < ConsoleDataManager.COMMAND_LIST_[command]["minPermission"]:
+	if permission < Console.COMMAND_LIST_[command]["minPermission"]:
 		return "Permission level too low to use this command."
 	
 	var TargetRef: Node = get_command_target(command, keyword)
 	if not TargetRef:
 		if keyword:
 			return "Keyword '" + keyword + "' does not have a reference."
-		if ConsoleDataManager.COMMAND_LIST_[command]["requiresKeyword"]:
+		if Console.COMMAND_LIST_[command]["requiresKeyword"]:
 			return "Command '" + command + "' does not exist in global scope."
 		return "Could not find command target for '" + command + "'."
 	
-	var method: String = ConsoleDataManager.COMMAND_LIST_[command]["method"]
+	var method: String = Console.COMMAND_LIST_[command]["method"]
 	if not method_exists(TargetRef, method):
 		return (
 			"Command '"
@@ -102,10 +102,10 @@ func parse_command(
 
 ## Gets the reference to the command's target node or returns null if it's not found.
 func get_command_target(command: String, keyword: String = "") -> Node:
-	var target: String = ConsoleDataManager.COMMAND_LIST_[command]["target"]
+	var target: String = Console.COMMAND_LIST_[command]["target"]
 	
 	if keyword.is_empty():
-		if ConsoleDataManager.COMMAND_LIST_[command]["requiresKeyword"]:
+		if Console.COMMAND_LIST_[command]["requiresKeyword"]:
 			return null
 		
 		if target.is_empty():
@@ -116,8 +116,8 @@ func get_command_target(command: String, keyword: String = "") -> Node:
 			return get_tree().root.find_child(target, true , false)
 		return NodeRef
 	else:
-		if ConsoleDataManager.keywordList_.has(keyword):
-			return ConsoleDataManager.keywordList_[keyword]
+		if Console.keywordList_.has(keyword):
+			return Console.keywordList_[keyword]
 	
 	return null
 
@@ -309,9 +309,9 @@ func parse_argument_type(
 				return i
 		
 		TYPE_OBJECT:
-			if ConsoleDataManager.keywordList_.has(argument):
+			if Console.keywordList_.has(argument):
 				parsedArguments_["argumentList"].append(
-					ConsoleDataManager.keywordList_[argument]
+					Console.keywordList_[argument]
 				)
 			else:
 				return i

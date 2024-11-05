@@ -211,10 +211,7 @@ func on_input_field_text_changed(text: String) -> void:
 	var keyword: String = processedText_["keyword"]
 	
 	# Handle command that is a valid keyword
-	if (
-		keyword.is_empty()
-		and ConsoleDataManager.keywordList_.has(commandName)
-	):
+	if keyword.is_empty() and Console.keywordList_.has(commandName):
 		processedText_["keyword"] = commandName
 		keyword = commandName
 		processedText_["command"] = ""
@@ -224,10 +221,10 @@ func on_input_field_text_changed(text: String) -> void:
 	if (
 		not keyword.is_empty()
 		and commandName.is_empty()
-		and ConsoleDataManager.keywordList_.has(keyword)
+		and Console.keywordList_.has(keyword)
 	):
 		var commandList_: Array[String] = get_target_commands(
-			ConsoleDataManager.keywordList_[keyword]
+			Console.keywordList_[keyword]
 		)
 		for command in commandList_:
 			if matching_command(command):
@@ -235,7 +232,7 @@ func on_input_field_text_changed(text: String) -> void:
 			add_suggestion(command, keyword)
 	else:
 		# Check for valid suggestions
-		for command in ConsoleDataManager.COMMAND_LIST_:
+		for command in Console.COMMAND_LIST_:
 			if matching_command(command):
 				continue
 			
@@ -374,9 +371,9 @@ func filter_suggestions(entry_: Dictionary) -> bool:
 	if (
 		not processedText_["keyword"].is_empty()
 		and processedText_["command"].is_empty()
-		and ConsoleDataManager.keywordList_.has(processedText_["keyword"])
+		and Console.keywordList_.has(processedText_["keyword"])
 	):
-		return ConsoleDataManager.keywordList_[
+		return Console.keywordList_[
 				processedText_["keyword"]
 			].has_method(entry_["command"])
 	
@@ -415,9 +412,8 @@ func get_target_commands(TargetRef: Node) -> Array[String]:
 	if not TargetRef:
 		return commandList_
 	
-	for command in ConsoleDataManager.COMMAND_LIST_:
-		var method: String =\
-			ConsoleDataManager.COMMAND_LIST_[command]["method"]
+	for command in Console.COMMAND_LIST_:
+		var method: String = Console.COMMAND_LIST_[command]["method"]
 		if TargetRef.has_method(method):
 			commandList_.append(command)
 	
@@ -430,7 +426,7 @@ func add_suggestion(command: String, keyword: String) -> void:
 	if not TargetRef:
 		return
 	
-	var method: String = ConsoleDataManager.COMMAND_LIST_[command]["method"]
+	var method: String = Console.COMMAND_LIST_[command]["method"]
 	if not TargetRef.has_method(method):
 		return
 	

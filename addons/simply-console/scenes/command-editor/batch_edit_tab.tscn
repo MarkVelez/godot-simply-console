@@ -19,14 +19,14 @@ func init_batch_edit() -> void:
 	update_command_list()
 	
 	# Add permission levels to option button
-	for permission in ConsoleDataManager.PermissionLevel:
+	for permission in Console.PermissionLevel:
 		PermissionRef.add_item(permission)
 
 
 func update_command_list() -> void:
 	CommandListRef.clear()
 	
-	for command in ConsoleDataManager.COMMAND_LIST_.keys():
+	for command in Console.COMMAND_LIST_.keys():
 		CommandListRef.add_item(command)
 
 
@@ -38,7 +38,7 @@ func on_edit_commands_pressed() -> void:
 	
 	for i in CommandListRef.get_selected_items():
 		var commandInfo_: Dictionary =\\
-			ConsoleDataManager.COMMAND_LIST_[CommandListRef.get_item_text(i)]
+			Console.COMMAND_LIST_[CommandListRef.get_item_text(i)]
 		
 		commandInfo_[\"target\"] = target
 		commandInfo_[\"minPermission\"] = permission
@@ -60,7 +60,7 @@ func reset_tab() -> void:
 
 func on_remove_commands_pressed() -> void:
 	for i in CommandListRef.get_selected_items():
-		ConsoleDataManager.COMMAND_LIST_.erase(CommandListRef.get_item_text(i))
+		Console.COMMAND_LIST_.erase(CommandListRef.get_item_text(i))
 	
 	update_command_list()
 	emit_signal(\"changes_made\")

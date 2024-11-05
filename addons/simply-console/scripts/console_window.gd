@@ -1,7 +1,7 @@
 extends Window
 
 ## Permissions for executing commands.
-@export var permissionLevel: ConsoleDataManager.PermissionLevel = 0
+@export var permissionLevel: Console.PermissionLevel = 0
 ## Whether the user has access to cheats.
 @export var cheatsEnabled: bool = false
 
@@ -27,6 +27,11 @@ var historyPosition: int = 0
 
 
 func _enter_tree() -> void:
+	if not Console.ConsoleRef:
+		Console.ConsoleRef = self
+	else:
+		assert(false, "Duplicate console window found.")
+	
 	CommandParserRef = CommandParser.new()
 	add_child(CommandParserRef)
 	CommandParserRef.set_owner(self)
@@ -37,6 +42,7 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	set_visible(false)
 	output_comment(
 		"To see a list of available commands use the 'help' command."
 	)
@@ -163,8 +169,8 @@ func output_comment(text: String) -> void:
 #region Console Commands
 func show_command_list(filter: String = "") -> String:
 	var response: String = "List of available commands:\n"
-	var COMMAND_LIST_: Dictionary = ConsoleDataManager.COMMAND_LIST_
-	var keywordList_: Dictionary = ConsoleDataManager.keywordList_
+	var COMMAND_LIST_: Dictionary = Console.COMMAND_LIST_
+	var keywordList_: Dictionary = Console.keywordList_
 	var isKeywordFilter: bool = keywordList_.has(filter)
 	
 	# Show list of commands

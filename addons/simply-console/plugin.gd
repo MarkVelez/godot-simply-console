@@ -9,15 +9,12 @@ var CommandEditorRef: Window
 
 func _enter_tree() -> void:
 	add_tool_menu_item("Open Command Editor...", create_command_editor)
-	add_autoload_singleton(
-		"ConsoleDataManager",
-		"/singletons/console_data_manager.gd"
-	)
+	add_autoload_singleton("Console", "/singletons/console_manager.gd")
 
 
 func _exit_tree() -> void:
 	remove_tool_menu_item("Open Command Editor...")
-	remove_autoload_singleton("ConsoleDataManager")
+	remove_autoload_singleton("Console")
 
 
 func create_command_editor() -> void:
