@@ -1,12 +1,11 @@
-extends Node
-class_name ObjectPicker
+extends ConsoleModule
 ## Addon for the console window that let's you click on objects in a scene
 ## and get their reference.
 ##
 ## [b]Note:[/b] The object picker requires that the scene has an active camera.
 
-## Reference to the console window.
-var ConsoleRef: Window = null
+## Emitted when an object is selected.
+signal object_selected(ObjectRef: Node)
 
 ## Fixed scene type for the object picker.[br]
 ## This can be set to skip needing to determine the current scene type.
@@ -17,18 +16,13 @@ var ConsoleRef: Window = null
 	"3D"
 ) var FIXED_SCENE_TYPE: String = "Unknown"
 
-var CameraRef
+var CameraRef: Node
 
 var SelectedRef: Node
 var sceneType: String
 
 
-func _ready() -> void:
-	ConsoleRef = Console.ConsoleRef
-	if not ConsoleRef:
-		assert(false, "Could not find console window.")
-	
-	ConsoleRef.connect("visibility_changed", on_visibility_changed)
+func _module_init() -> void:
 	Console.keywordList_["this"] = null
 
 
@@ -46,16 +40,19 @@ func _input(event: InputEvent) -> void:
 			_:
 				return
 		
-		ConsoleRef.output_comment(
-			"Selected Object: " + str(SelectedRef)
-			+ "\nUse keyword 'this' to access reference."
-		)
-		Console.keywordList_["this"] = SelectedRef
+		if SelectedRef:
+			ConsoleRef.output_comment(
+				"Selected Object: " + str(SelectedRef)
+				+ "\nUse keyword 'this' to access reference."
+			)
+			Console.keywordList_["this"] = SelectedRef
+			emit_signal("object_selected", SelectedRef)
 		get_viewport().set_input_as_handled()
 
 
 ## Retrieves the active camera reference when the console window is made visible.
-func on_visibility_changed() -> void:
+func console_toggled() -> void:
+	super.console_toggled()
 	if ConsoleRef.is_visible():
 		var ViewportRef: Viewport = get_viewport()
 		sceneType = get_scene_type(ViewportRef)
