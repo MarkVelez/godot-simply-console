@@ -17,8 +17,9 @@ const PATH: String = DIRECTORY + FILE
 var COMMAND_LIST_: Dictionary
 var keywordList_: Dictionary
 
-# Reference to the console window
+# Console related references
 var ConsoleRef: Window = null
+var ModuleListRef: Control = null
 
 
 func _enter_tree() -> void:

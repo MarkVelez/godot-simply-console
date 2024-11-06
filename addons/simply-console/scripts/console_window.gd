@@ -4,6 +4,8 @@ extends Window
 @export var permissionLevel: Console.PermissionLevel = 0
 ## Whether the user has access to cheats.
 @export var cheatsEnabled: bool = false
+## List of modules that will be added to the console.
+@export var moduleList_: Array[PackedScene] = []
 
 # Console node references.
 @onready var OutputFieldRef: RichTextLabel = %OutputField
@@ -39,6 +41,8 @@ func _enter_tree() -> void:
 	CommandLexerRef = CommandLexer.new()
 	add_child(CommandLexerRef)
 	CommandLexerRef.set_owner(self)
+	
+	add_modules()
 
 
 func _ready() -> void:
@@ -140,6 +144,38 @@ func update_command_history(text: String) -> void:
 		commandHistory_.remove_at(0)
 	
 	historyPosition = commandHistory_.size()
+
+
+func add_modules() -> void:
+	if moduleList_.is_empty():
+		return
+	
+	# Create module list
+	var ModuleListRef := Control.new()
+	ModuleListRef.set_name("ModuleList")
+	Console.add_child(ModuleListRef)
+	ModuleListRef.set_owner(Console)
+	ModuleListRef.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ModuleListRef.set_mouse_filter(Control.MOUSE_FILTER_PASS)
+	
+	# Add modules
+	for module in moduleList_:
+		if not module:
+			push_warning(
+				"Null reference found in module list at index "
+				+ str(moduleList_.find(module))
+			)
+			continue
+		
+		var ModuleRef: Node = module.instantiate()
+		if not ModuleRef is ConsoleModule:
+			push_warning("Invalid console module found: " + ModuleRef.get_name())
+			continue
+		
+		ModuleListRef.add_child(ModuleRef)
+		ModuleRef.set_owner(ModuleListRef)
+		ModuleRef.set_visible(false)
+		ModuleRef.call_deferred("_module_init")
 
 
 #region Print methods
