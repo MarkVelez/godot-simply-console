@@ -6,7 +6,7 @@ class_name ConsoleModule
 
 
 func _ready() -> void:
-	ConsoleRef.connect("visibility_changed", console_toggled)
+	ConsoleRef.connect("visibility_changed", on_console_toggled)
 
 
 ## Called when the module gets added to the console.
@@ -18,7 +18,7 @@ func _module_init() -> void:
 
 ## Called when the console's visibility is toggled.
 ## Can be overwritten if needed.
-func console_toggled() -> void:
+func on_console_toggled() -> void:
 	if ConsoleRef.is_visible():
 		set_visible(true)
 		set_process_mode(Node.PROCESS_MODE_INHERIT)

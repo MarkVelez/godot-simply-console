@@ -51,8 +51,8 @@ func _input(event: InputEvent) -> void:
 
 
 ## Retrieves the active camera reference when the console window is made visible.
-func console_toggled() -> void:
-	super.console_toggled()
+func on_console_toggled() -> void:
+	super.on_console_toggled()
 	if ConsoleRef.is_visible():
 		var ViewportRef: Viewport = get_viewport()
 		sceneType = get_scene_type(ViewportRef)

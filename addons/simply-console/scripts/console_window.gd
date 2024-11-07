@@ -175,6 +175,8 @@ func add_modules() -> void:
 		ModuleListRef.add_child(ModuleRef)
 		ModuleRef.set_owner(ModuleListRef)
 		ModuleRef.set_visible(false)
+		ModuleRef.set_process_mode(Node.PROCESS_MODE_DISABLED)
+		Console.moduleList_[ModuleRef.name] = ModuleRef
 		ModuleRef.call_deferred("_module_init")
 
 

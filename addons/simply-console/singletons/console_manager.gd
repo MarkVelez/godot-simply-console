@@ -19,7 +19,7 @@ var keywordList_: Dictionary
 
 # Console related references
 var ConsoleRef: Window = null
-var ModuleListRef: Control = null
+var moduleList_: Dictionary
 
 
 func _enter_tree() -> void:
