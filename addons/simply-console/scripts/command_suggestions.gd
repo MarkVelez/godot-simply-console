@@ -325,7 +325,7 @@ func update_suggestion(entry_: Dictionary) -> void:
 				+ "[/color]"
 			)
 		
-		if arg_["default"] != null:
+		if arg_.has("default"):
 			var default: String = str(arg_["default"])
 			if arg_["type"] == TYPE_STRING and arg_["default"].is_empty():
 				default = "\"\""

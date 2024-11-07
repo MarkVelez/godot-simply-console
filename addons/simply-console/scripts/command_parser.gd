@@ -136,17 +136,17 @@ func get_method_arguments(
 	
 	var argumentList_: Array[Dictionary] = []
 	for i in range(methodArguments_.size()):
-		var argument: Dictionary = methodArguments_[i]
-		var default = null
+		var argumentInfo_: Dictionary = methodArguments_[i]
+		var argument_: Dictionary = {}
+		argument_ = {
+			"name": argumentInfo_["name"],
+			"type": argumentInfo_["type"]
+		}
 		
 		if i >= methodArguments_.size() - defaultValues_.size():
-			default = defaultValues_[i - defaultValues_.size()]
+			argument_["default"] = defaultValues_[i - defaultValues_.size()]
 		
-		argumentList_.append({
-			"name": argument["name"],
-			"type": argument["type"],
-			"default": default
-		})
+		argumentList_.append(argument_)
 	
 	return argumentList_
 
@@ -191,7 +191,7 @@ func arguments_optional(
 		return true
 	
 	for argument_ in methodArguments_:
-		if argument_["default"] == null:
+		if not argument_.has("default"):
 			return false
 	
 	return true
