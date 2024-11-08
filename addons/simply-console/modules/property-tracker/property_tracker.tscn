@@ -1,0 +1,97 @@
+[gd_scene load_steps=6 format=3 uid="uid://c2kr6ux8lx4i"]
+
+[ext_resource type="Script" path="res://addons/simply-console/modules/property-tracker/property_tracker.gd" id="1_hxgy8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0h0im"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lehec"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_iir0n"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8snhe"]
+
+[node name="PropertyTracker" type="Control"]
+auto_translate_mode = 2
+layout_mode = 3
+anchors_preset = 0
+offset_right = 64.0
+offset_bottom = 43.0
+size_flags_vertical = 0
+script = ExtResource("1_hxgy8")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+offset_right = 64.0
+offset_bottom = 43.0
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="Object" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 0
+mouse_default_cursor_shape = 6
+text = "<null>"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="PropertyList" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="Pages" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 0
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer/Pages"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/Pages"]
+layout_mode = 2
+
+[node name="PreviousPage" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/Pages/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 2
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0h0im")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_0h0im")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_0h0im")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_0h0im")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lehec")
+text = "<"
+
+[node name="PageNumber" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/Pages/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+text = "1/1"
+horizontal_alignment = 1
+
+[node name="NextPage" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/Pages/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 10
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_iir0n")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_0h0im")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_0h0im")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_0h0im")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_8snhe")
+text = ">"

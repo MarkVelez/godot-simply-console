@@ -22,21 +22,6 @@ var ConsoleRef: Window = null
 var moduleList_: Dictionary
 
 
-func _enter_tree() -> void:
-	if Engine.is_editor_hint():
-		return
-	
-	if not GLOBAL_CONSOLE:
-		return
-	
-	var ConsoleScene: PackedScene = load(
-		"res://addons/simply-console/scenes/console-window/console_window.tscn"
-	)
-	var InstanceRef = ConsoleScene.instantiate()
-	add_child(InstanceRef)
-	InstanceRef.set_owner(self)
-
-
 func _ready() -> void:
 	# Verify the directory
 	DirAccess.make_dir_absolute(DIRECTORY)
@@ -50,6 +35,19 @@ func _ready() -> void:
 		COMMAND_LIST_ = get_built_in_commands()
 		save_data()
 		push_warning("No command list file found.")
+	
+	if Engine.is_editor_hint():
+		return
+	
+	if not GLOBAL_CONSOLE:
+		return
+	
+	var ConsoleScene: PackedScene = load(
+		"res://addons/simply-console/scenes/console-window/console_window.tscn"
+	)
+	var InstanceRef = ConsoleScene.instantiate()
+	add_child(InstanceRef)
+	InstanceRef.set_owner(self)
 
 
 func get_built_in_commands() -> Dictionary:

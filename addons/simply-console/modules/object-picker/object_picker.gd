@@ -26,7 +26,7 @@ func _module_init() -> void:
 	Console.keywordList_["this"] = null
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton or not ConsoleRef.is_visible():
 		return
 	
