@@ -10,7 +10,7 @@ When opening the command editor, you are greeted with multiple input fields used
 
 - `Command Name` is the name that will be used inside of the console to call the command.
 
-- `Minimum Permission` let's you set a minimum permission requirement to use the command allowing the restriction of commands. Permission levels are hierarchical so a higher level permission will have the access to commands from the permission levels below it. If you want to add or change a permission level, you can do so by going to `singletons/console_data_manager.gd` and changing the `PermissionLevel` enum. *The player's permission level is stored in the console window and can be changed as needed.*
+- `Minimum Permission` let's you set a minimum permission requirement to use the command allowing the restriction of commands. Permission levels are hierarchical so a higher level permission will have the access to commands from the permission levels below it. If you want to add or change a permission level, you can do so by going to `singletons/console_manager.gd` and changing the `PermissionLevel` enum. *The player's permission level is stored in the console window and can be changed as needed.*
 
 - `Requires Cheats` let's you decide if the command requires cheats to be enabled to use.
 
@@ -19,7 +19,6 @@ When opening the command editor, you are greeted with multiple input fields used
 - `Target Name` is the name of the target node. The name has to be an exact match otherwise the command will not work. Optionally this field can be left empty which will directly reference the console window.
 
 - `Target Method` is the method, i.e., function which will be called from the target node. This as well has to be an exact match otherwise the command will not work.
-
 
 ## Adding/Editing commands
 

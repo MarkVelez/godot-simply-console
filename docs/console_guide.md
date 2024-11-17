@@ -2,10 +2,9 @@
 
 ## Setting up the console
 
-First, activate the plugin as it will create an autorun script which is used to access the list of commands that the console can use.
+First, you want to enable the plugin by going to `Project > Project Settings > Plugins` and then look for `Simply Console`. After this you will want to reload your project. *If you see errors pop up when you first install the plugin, that is to be expected, just enable the plugin and reload your project.*
 
-Once you have activate the plugin, you can create an instance of the console window, which can be found under `scenes/console_window.tscn`, inside of your game scene.
-*The console window is not persistent between scenes so you will have to add an instance to each scene you want to have it in.*
+**Note:** As of `v1.4.0`, the console has been made "global", i.e., it is now persistent between scenes as it is added as a child of the console manager singleton. If you wish to keep using instances of the console, you can go to the `console_manager.gd` script which can be found at `addons/simply-console/singletons/`. Here you can change `GLOBAL_CONSOLE` to `false`. *The console will still be easily accessible through the `Console` singleton.*
 
 The console has built in limits for responses, character count and command history to save memory. These limits can be adjusted if needed by opening the console window scene and adjusting the `MAX_RESPONSES`, `MAX_CHAR_COUNT` and `MAX_COMMAND_HISTORY` variables respectively. *Note that MAX_RESPONSES limits the amount of paragraphs inside of the console which includes '\n' as well, so its possible for a single response to take up multiple response slots. This is however accounted for when trimming the contents of the console so the limit will never be surpassed.*
 
@@ -30,7 +29,7 @@ The console comes with three build in commands:
 
 If you want to add custom commands, refer to the [Command Editor](command_editor_guide.md) guide.
 
-To print to the console you can use the following functions:
+To print to the console you can use the following functions through the `Console` singleton:
 - `output_text()`
 - `output_error()`
 - `output_warning()`
@@ -38,17 +37,10 @@ To print to the console you can use the following functions:
 
 For `output_text()`, you can optionally pass a custom color as well. As for the rest they function the same, but they have predefined colors, i.e., **red for error**, **yellow for warning** and **grey for comment**.
 
+If you want to get the reference to the console window itself, you can do so using `Console.ConsoleRef`.
+
 ## Using and adding keywords
 
 Keywords represent an object thus they can be used to call commands directly on a specific object. To call a command using a keyword you can use `<keyword>.<command>` similar to how objects work in code. Alternatively, keywords can also be used as a command argument, which will pass the reference of the object that the keyword is representing.
 
-Currently, adding keywords has to be done via code, but is very easy to do. Keywords, and the reference of the object that they are representing, are stored in the `ConsoleDataManager` inside of the `keywordList_` dictionary. To add a keyword and its reference, you can use `ConsoleDataManager.keywordList_[<keyword>] = <reference>`.
-
-
-## Using the object picker
-
-The object picker is an addon for the console that can be used to retrieve the reference of objects that are clicked on while the console is open. Once an object is selected, a message is shown in the console containing the reference and how to access it. To access the object that was selected the `this` keyword can be used.
-
-To add the object picker to your scene, simply search for `ObjectPicker` when adding a new node to the scene. **Do not put the object picker as a child of the console window otherwise it may not work properly.** Once added to the scene, you will have to provide the reference to the console window and optionally select the scene type, i.e., 2D or 3D. If the `Fixed Scene Type` is left `Unknown` the object picker will attempt to dynamically determine the scene type by retrieving the currently active camera.
-
-The object picker currently only works on `PhysicsBodies` and everything else will not be pickable. It also requires that the scene have an active camera as it is used to cast the mouse position onto the game world.
+Currently, adding keywords has to be done via code, but is very easy to do. Keywords, and the reference of the object that they are representing, are stored in the `Console` singleton inside of the `keywordList_` dictionary. To add a keyword and its reference, you can use `Console.keywordList_[<keyword>] = <reference>`.

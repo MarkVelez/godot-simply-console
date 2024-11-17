@@ -23,13 +23,18 @@ The console can also be directly printed to to display errors, warnings or gener
     </ul>
 </details>
 
-- Object picker to get reference of objects being clicked on
-
 - Keywords to access specific objects directly
 
 - Permission levels and cheats to restrict command access
 
 - Graphical editor plugin for creating and editing commands
+
+- <details><summary><b>Module system with included modules</b></summary>
+    <ul>
+        <li>Object Picker</li>
+        <li>Property Viewer</li>
+    </ul>
+</details>
 
 - Print functions
 
@@ -41,12 +46,4 @@ The console can also be directly printed to to display errors, warnings or gener
 
 - [Console](docs/console_guide.md)
 - [Command Editor](docs/command_editor_guide.md)
-
-## Notice
-
-If you are upgrading from a version prior to `v1.3.0`, make sure to update your command list file as the command structure got reworked.
-
-To update your command list:
-- Go to the `Extras` tab in the command editor.
-- Press the `Validate Command List` button. *This may spam the editor output.*
-- Press the `Save` button.
+- [Module System](docs/module_system.md)
