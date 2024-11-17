@@ -47,9 +47,10 @@ func parse_command(
 		return "Arguments of target method has unsupported argument type(s)."
 	
 	var response
+	var optionalCount: int = arguments_optional(methodArguments_, arguments_)
 	
 	# Check if command expects arguments
-	if arguments_optional(methodArguments_, arguments_):
+	if optionalCount == -1:
 		response = TargetRef.call(method)
 		if response:
 			return str(response)
@@ -68,7 +69,7 @@ func parse_command(
 	
 	if (
 		not methodArguments_.is_empty()
-		and arguments_.size() < methodArguments_.size()
+		and arguments_.size() < methodArguments_.size() - optionalCount
 	):
 		return (
 			"Too few arguments for command '"
@@ -183,18 +184,23 @@ func method_exists(TargetRef: Node, method: String) -> bool:
 func arguments_optional(
 	methodArguments_: Array[Dictionary],
 	arguments_: Array
-) -> bool:
-	if not arguments_.is_empty():
-		return false
+) -> int:
+	if methodArguments_.is_empty() and arguments_.is_empty():
+		return -1
 	
-	if methodArguments_.is_empty():
-		return true
-	
+	var optionalCount: int = 0
 	for argument_ in methodArguments_:
 		if not argument_.has("default"):
-			return false
+			continue
+		optionalCount += 1
 	
-	return true
+	if (
+		arguments_.is_empty()
+		and optionalCount == methodArguments_.size()
+	):
+		return -1
+	
+	return optionalCount
 
 
 ## Parses the arguments for the command and converts them to appropriate type.
