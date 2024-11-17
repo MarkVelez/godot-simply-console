@@ -6,6 +6,7 @@ class_name ConsoleModule
 
 
 func _ready() -> void:
+	set_visible(ConsoleRef.visible)
 	ConsoleRef.connect("visibility_changed", on_console_toggled)
 
 

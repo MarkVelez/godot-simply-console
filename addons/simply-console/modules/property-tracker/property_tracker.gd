@@ -12,6 +12,8 @@ const PROPERTIES_PER_PAGE: int = 5
 var TrackedObjectRef: Node = null
 var propertyList_: PackedStringArray = []
 var trackedProperties_: Dictionary = {}
+var isEnabled: bool = false
+var isPersistent: bool = true
 
 var lastPage: int = 0
 var currentPage: int = 0 :
@@ -35,6 +37,10 @@ func _module_init() -> void:
 		func(event: InputEvent):
 			if not event is InputEventMouseButton: return
 			if event.button_index == MOUSE_BUTTON_LEFT:
+				if event.is_double_click():
+					set_position(Vector2.ZERO)
+					dragOffset = Vector2.ZERO
+					return
 				isDragging = event.is_pressed()
 				dragOffset = get_global_mouse_position() - global_position
 	)
@@ -51,18 +57,26 @@ func _module_init() -> void:
 
 
 func on_console_toggled() -> void:
-	pass
+	if isPersistent:
+		return
+	elif isEnabled:
+		super.on_console_toggled()
 
 
-func toggle_module(ObjectRef: Node = null) -> void:
-	var isVisible: bool = is_visible()
+func toggle_module(persistent: bool = true, ObjectRef: Node = null) -> void:
 	if ObjectRef:
 		on_object_selected(ObjectRef)
-		if isVisible:
+		if isEnabled:
+			isPersistent = persistent
 			return
 	
-	set_visible(!isVisible)
-	if isVisible:
+	if isEnabled and isPersistent != persistent:
+		isPersistent = persistent
+		return
+	
+	set_visible(!is_visible())
+	isEnabled = !isEnabled
+	if isEnabled:
 		set_process_mode(Node.PROCESS_MODE_DISABLED)
 	else:
 		set_process_mode(Node.PROCESS_MODE_INHERIT)
